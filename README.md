@@ -1,5 +1,7 @@
 # mkdocs-alias-plugin
 
+[![PyPI version](https://badge.fury.io/py/mkdocs-alias-plugin.svg)](https://pypi.org/project/mkdocs-alias-plugin/)  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![example workflow](https://github.com/eddyluten/mkdocs-alias-plugin/actions/workflows/pylint.yml/badge.svg)
+
 An MkDocs plugin allowing links to your pages using a custom alias.
 
 The use syntax of the alias is reminiscent of MediaWiki links.

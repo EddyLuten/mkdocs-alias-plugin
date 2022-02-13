@@ -1,15 +1,16 @@
-import os
+"""Sets up the parameters required by PyPI"""
+from pathlib import Path
 from setuptools import setup, find_packages
 
-def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+this_directory = Path(__file__).parent
+long_description = (this_directory / 'README.md').read_text()
 
 setup(
     name='mkdocs-alias-plugin',
-    version='0.1.0',
+    version='0.1.1',
     description=
     'An MkDocs plugin allowing links to your pages using a custom alias',
-    long_description=read('README.md'),
+    long_description=long_description,
     long_description_content_type='text/markdown',
     keywords='mkdocs python markdown alias link wiki',
     url='https://github.com/eddyluten/mkdocs-alias-plugin',
