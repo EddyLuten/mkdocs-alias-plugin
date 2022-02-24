@@ -6,10 +6,28 @@ An MkDocs plugin allowing links to your pages using a custom alias.
 import logging
 import re
 from mkdocs.plugins import BasePlugin
-from mkdocs.utils import meta
+from mkdocs.utils import meta, get_markdown_title
 from mkdocs.config import config_options
 
-TAGS_REGEX = r"\[\[([^|^\]]+)\|?([^\]]+)?\]\]"
+# The Regular Expression used to find alias tags
+ALIAS_TAG_REGEX = r"\[\[([^|^\]]+)\|?([^\]]+)?\]\]"
+
+def get_page_title(page_src, meta_data):
+    """Returns the title of the page. The title in the meta data section
+    will take precedence over the H1 markdown title if both are provided."""
+    return (
+        meta_data['title']
+        if 'title' in meta_data and isinstance(meta_data['title'], str)
+        else get_markdown_title(page_src)
+    )
+
+def get_alias_name(meta_data):
+    """Returns the alias name regardless of how the alias is configured."""
+    return (
+        meta_data['alias']
+        if isinstance(meta_data['alias'], str)
+        else meta_data['alias']['name']
+    )
 
 class AliasPlugin(BasePlugin):
     """An extension of BasePlugin providing all of the aliasing logic.
@@ -43,7 +61,7 @@ class AliasPlugin(BasePlugin):
     def on_page_markdown(self, markdown, **_):
         """Replaces any alias tags on the page with markdown links."""
         return re.sub(
-            TAGS_REGEX,
+            ALIAS_TAG_REGEX,
             self.__replace_tag,
             markdown
         )
@@ -72,27 +90,33 @@ class AliasPlugin(BasePlugin):
         """
         for file in filter(lambda f: f.is_documentation_page(), files):
             with open(file.abs_src_path, encoding='utf-8-sig', errors='strict') as handle:
-                source = handle.read()
-                _, meta_data = meta.get_data(source)
-                if len(meta_data) > 0:
-                    existing = self.aliases.get(meta_data['alias']['name'])
-                    if existing is not None:
-                        self.log.warning(
-                            "%s: alias %s already defined in %s, skipping.",
-                            file.url,
-                            meta_data['alias']['name'],
-                            existing['url']
-                        )
-                        continue
+                source, meta_data = meta.get_data(handle.read())
+                if len(meta_data) <= 0 or 'alias' not in meta_data:
+                    continue
 
-                    new_alias = {
-                        'alias': meta_data['alias']['name'],
-                        'url': f"/{file.url}",
-                        'text': meta_data['alias']['text']
-                    }
-                    self.log.info(
-                        "Alias %s to %s",
-                        new_alias['alias'],
-                        new_alias['url']
+                alias_name = get_alias_name(meta_data)
+                existing = self.aliases.get(alias_name)
+                if existing is not None:
+                    self.log.warning(
+                        "%s: alias %s already defined in %s, skipping.",
+                        file.url,
+                        alias_name,
+                        existing['url']
                     )
-                    self.aliases[new_alias['alias']] = new_alias
+                    continue
+
+                new_alias = {
+                    'alias': alias_name,
+                    'text': (
+                        meta_data['alias']['text']
+                        if 'text' in meta_data['alias']
+                        else get_page_title(source, meta_data)
+                    ),
+                    'url': f"/{file.url}",
+                }
+                self.log.info(
+                    "Alias %s to %s",
+                    new_alias['alias'],
+                    new_alias['url']
+                )
+                self.aliases[new_alias['alias']] = new_alias

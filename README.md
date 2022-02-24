@@ -33,9 +33,7 @@ Add an `alias` section to your page's meta block:
 
 ```yaml
 ---
-alias:
-    name: wuthering-heights
-    text: Wuthering Heights, a novel by Emily Brontë
+alias: wuthering-heights
 ---
 ```
 
@@ -47,7 +45,17 @@ The song references [[wuthering-heights]].
 
 Which, after the page builds, renders as a regular link to your page.
 
-If you'd like to supply your own link text instead, you can do so using a pipe to separate the title from the alias:
+Or, a more advanced example by using the dictionary-style configuration instead to provide a different link title.
+
+```yaml
+---
+alias:
+    name: wuthering-heights
+    text: Wuthering Heights, a novel by Emily Brontë
+---
+```
+
+If you'd like to supply your own link text instead on a link-by-link basis, you can do so using a pipe to separate the title from the alias:
 
 ```md
 The song references [[wuthering-heights|Wuthering Heights]].
@@ -71,6 +79,10 @@ You may use the optional `verbose` option to print more information about which 
 
 ## Troubleshooting
 
+### The link text looks like a path or URL
+
+Your alias doesn't have link text defined *and* your page doesn't have a title H1 tag or a `title` attribute in its meta data section. Once you add this, your link will render with the appropriate text.
+
 ### My alias is not being replaced
 
 `WARNING  -  Alias 'my-alias' not found`
@@ -90,3 +102,19 @@ Aliases *must* be unique. Ensure that you're not redefining the same alias for a
 ```zsh
 pip install -e /path/to/mkdocs-alias-plugin/
 ```
+
+## Changelog
+
+### 0.2.0
+
+Allow strings as aliases instead of dictionaries, which allows for the use of page titles in the link text of the alias.
+
+This version also makes the `text` key optional in the alias dictionary configuration, using the same page title link text instead if it's not provided.
+
+### 0.1.1
+
+Fixes a bunch of linter issues, but no new logic.
+
+### 0.1.0
+
+Initial release with all of the base logic in place.
