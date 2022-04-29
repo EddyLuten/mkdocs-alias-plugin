@@ -1,6 +1,6 @@
 # mkdocs-alias-plugin
 
-[![PyPI version](https://badge.fury.io/py/mkdocs-alias-plugin.svg)](https://pypi.org/project/mkdocs-alias-plugin/)  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![example workflow](https://github.com/eddyluten/mkdocs-alias-plugin/actions/workflows/pylint.yml/badge.svg) [![Downloads](https://pepy.tech/badge/mkdocs-alias-plugin)](https://pepy.tech/project/mkdocs-alias-plugin)
+[![PyPI version](https://badge.fury.io/py/mkdocs-alias-plugin.svg)](https://pypi.org/project/mkdocs-alias-plugin/)  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![example workflow](https://github.com/eddyluten/mkdocs-alias-plugin/actions/workflows/pylint.yml/badge.svg) [![Downloads](https://pepy.tech/badge/mkdocs-alias-plugin)](https://pepy.tech/project/mkdocs-alias-plugin) ![](https://github.com/eddyluten/mkdocs-alias-plugin/workflows/mkdocs-alias-plugin%20Tests/badge.svg)
 
 An MkDocs plugin allowing links to your pages using a custom alias such as `[[my-alias]]` or `[[my-alias|My Title]]`.
 
@@ -105,7 +105,15 @@ pip install -e /path/to/mkdocs-alias-plugin/
 
 ## Changelog
 
+### 0.3.0
+
+2022-04-27
+
+Adds the ability to create multiple aliases for a single page (see the documentation for "Multiple Aliases" above). Improves the "alias not found" warning by listing the file attempting to use the alias.
+
 ### 0.2.0
+
+2022-02-23
 
 Allow strings as aliases instead of dictionaries, which allows for the use of page titles in the link text of the alias.
 
@@ -113,8 +121,12 @@ This version also makes the `text` key optional in the alias dictionary configur
 
 ### 0.1.1
 
+2022-02-12
+
 Fixes a bunch of linter issues, but no new logic.
 
 ### 0.1.0
+
+2022-02-12
 
 Initial release with all of the base logic in place.
