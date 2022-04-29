@@ -65,6 +65,19 @@ The song references [[wuthering-heights|Wuthering Heights]].
 
 Please refer to the [MkDocs documentation](https://www.mkdocs.org/user-guide/writing-your-docs/#yaml-style-meta-data) for more information on how the meta-data block is used.
 
+### Multiple Aliases
+
+As of version 0.3.0, it is possible to assign multiple aliases to a single page. This does come with the limitation that these aliases cannot define a per-alias title. The syntax for this is:
+
+```yaml
+---
+alias:
+    - wuthering-heights
+    - wuthering
+    - wh
+---
+```
+
 ## Options
 
 You may customize the plugin by passing options into the plugin's configuration sections in `mkdocs.yml`:
