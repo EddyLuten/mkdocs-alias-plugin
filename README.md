@@ -6,6 +6,8 @@ An MkDocs plugin allowing links to your pages using a custom alias such as `[[my
 
 The aliases are configured through the meta-sections of each page (see Usage below).
 
+If you like this plugin, you'll probably also like [mkdocs-categories-plugin](https://github.com/EddyLuten/mkdocs-categories-plugin).
+
 ## Rationale
 
 I maintain a fairly large wiki and occasionally will restructure parts of it, resulting in many broken links. This plugin allows me to separate the wiki contents from the file system structure and resolves the paths during build time. Maybe this plugin will help you out as well.
