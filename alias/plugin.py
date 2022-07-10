@@ -5,14 +5,15 @@ An MkDocs plugin allowing links to your pages using a custom alias.
 
 import logging
 import re
+from typing import Match
 from mkdocs.plugins import BasePlugin
 from mkdocs.utils import meta, get_markdown_title
 from mkdocs.config import config_options
 
 # The Regular Expression used to find alias tags
-ALIAS_TAG_REGEX = r"\[\[([^|^\]]+)\|?([^\]]+)?\]\]"
+ALIAS_TAG_REGEX = r"([\\])?\[\[([^|\]]+)\|?([^\]]+)?\]\]"
 
-def get_page_title(page_src, meta_data):
+def get_page_title(page_src: str, meta_data: dict):
     """Returns the title of the page. The title in the meta data section
     will take precedence over the H1 markdown title if both are provided."""
     return (
@@ -21,7 +22,7 @@ def get_page_title(page_src, meta_data):
         else get_markdown_title(page_src)
     )
 
-def get_alias_names(meta_data):
+def get_alias_names(meta_data: dict):
     """Returns the list of configured alias names."""
     if len(meta_data) <= 0 or 'alias' not in meta_data:
         return None
@@ -34,6 +35,36 @@ def get_alias_names(meta_data):
     if isinstance(aliases, str):
         return [ aliases ]
     return None
+
+def replace_tag(
+    match: Match,
+    aliases: dict,
+    log: logging.Logger,
+    page_path: str
+):
+    """Callback used in the sub function within on_page_markdown."""
+    if match.group(1) is not None:
+        # if the alias match was escaped, return the unescaped version
+        return match.group(0)[1:]
+    alias = aliases.get(match.group(2))
+    if alias is None:
+        log.warning(
+            "Alias '%s' not found in '%s'",
+            match.group(2),
+            page_path
+        )
+        return match.group(0) # return the input string
+
+    text = alias['text'] if match.group(3) is None else match.group(3)
+    if text is None:
+        text = alias['url']
+    log.info(
+        "replaced alias '%s' with '%s' to '%s'",
+        alias['alias'],
+        text,
+        alias['url']
+    )
+    return f"[{text}]({alias['url']})"
 
 class AliasPlugin(BasePlugin):
     """An extension of BasePlugin providing all of the aliasing logic.
@@ -70,31 +101,14 @@ class AliasPlugin(BasePlugin):
         self.current_page = page
         return re.sub(
             ALIAS_TAG_REGEX,
-            self.__replace_tag,
+            lambda match: replace_tag(
+                match,
+                self.aliases,
+                self.log,
+                self.current_page.file.src_path
+            ),
             markdown
         )
-
-    def __replace_tag(self, match, **_):
-        """Callback used in the sub function within on_page_markdown."""
-        alias = self.aliases.get(match.group(1))
-        if alias is None:
-            self.log.warning(
-                "Alias '%s' not found in '%s'",
-                match.group(1),
-                self.current_page.file.src_path
-            )
-            return match.group(0) # return the input string
-
-        text = alias['text'] if match.group(2) is None else match.group(2)
-        if text is None:
-            text = alias['url']
-        self.log.info(
-            "replaced alias '%s' with '%s' to '%s'",
-            alias['alias'],
-            text,
-            alias['url']
-        )
-        return f"[{text}]({alias['url']})"
 
     def on_files(self, files, **_):
         """When MkDocs loads its files, extract aliases from any Markdown files

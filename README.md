@@ -78,6 +78,16 @@ alias:
 ---
 ```
 
+### Escaping Aliases (Escape Syntax)
+
+As of version 0.4.0, it is possible to escape aliases to prevent them being parsed by the plugin. This is useful if you use a similar double-bracket markup for a different purpose (e.g. shell scripts). The syntax for this feature is a leading backslash:
+
+```md
+\[[this text will remain untouched]]
+
+[[this text will be parsed as an alias]]
+```
+
 ## Options
 
 You may customize the plugin by passing options into the plugin's configuration sections in `mkdocs.yml`:
@@ -104,6 +114,8 @@ Your alias doesn't have link text defined *and* your page doesn't have a title H
 
 The alias could not be found in the defined aliases, usually due to a typo. Enable verbose output in the plugin's configuration to display all of the found aliases.
 
+However, it is also possible that the plugin is trying to interpret another double-bracketed syntax as an alias. In this case, use the escape syntax to prevent the plugin from parsing it.
+
 ### "Alias already defined"
 
 You're getting a message resembling this in your output:
@@ -114,11 +126,31 @@ Aliases *must* be unique. Ensure that you're not redefining the same alias for a
 
 ## Local Development
 
+Installing a localy copy of the plugin:
+
 ```zsh
 pip install -e /path/to/mkdocs-alias-plugin/
 ```
 
+Running unit tests after installing pytest from the root directory:
+
+```zsh
+pytest -vv
+```
+
+Both unit test and linting:
+
+```zsh
+pylint $(git ls-files '*.py') && pytest -vv
+```
+
 ## Changelog
+
+### 0.4.0
+
+2022-07-10
+
+Adds the ability to escape aliases so they won't be parsed by the plugin. Also adds more unit tests.
 
 ### 0.3.0
 
