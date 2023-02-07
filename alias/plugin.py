@@ -6,6 +6,7 @@ An MkDocs plugin allowing links to your pages using a custom alias.
 import logging
 import re
 from typing import Match
+import os
 from mkdocs.plugins import BasePlugin
 from mkdocs.utils import meta, get_markdown_title
 from mkdocs.config import config_options
@@ -62,9 +63,9 @@ def replace_tag(
         "replaced alias '%s' with '%s' to '%s'",
         alias['alias'],
         text,
-        alias['url']
+        alias['link']
     )
-    return f"[{text}]({alias['url']})"
+    return f"[{text}]({alias['link']})"
 
 class AliasPlugin(BasePlugin):
     """An extension of BasePlugin providing all of the aliasing logic.
@@ -78,6 +79,7 @@ class AliasPlugin(BasePlugin):
     """
     config_scheme = (
         ('verbose', config_options.Type(bool, default=False)),
+        ('relative_link', config_options.Type(bool, default=False)),
     )
     aliases = {}
     log = logging.getLogger(f'mkdocs.plugins.{__name__}')
@@ -99,6 +101,13 @@ class AliasPlugin(BasePlugin):
     def on_page_markdown(self, markdown, page, **_):
         """Replaces any alias tags on the page with markdown links."""
         self.current_page = page
+
+        for alias in self.aliases:
+            if self.config['relative_link']:  # Relative link
+                alias['link'] = os.path.relpath(alias['url'], page.url)
+            else:  # Absolute link
+                alias['link'] = alias['url']
+
         return re.sub(
             ALIAS_TAG_REGEX,
             lambda match: replace_tag(
@@ -144,6 +153,7 @@ class AliasPlugin(BasePlugin):
                             else get_page_title(source, meta_data)
                         ),
                         'url': f"/{file.url}",
+                        'link': None,
                     }
                     self.log.info(
                         "Alias %s to %s",

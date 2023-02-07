@@ -66,7 +66,8 @@ def test_replace_tag_1():
     aliases = { 'my-alias': {
         'text': 'link text',
         'alias': 'my-alias',
-        'url': 'my-alias.md'
+        'url': 'my-alias.md',
+        'link': 'my-alias.md',
     } }
     markdown = 'Test: [[my-alias]]'
     result = re.sub(
@@ -82,7 +83,8 @@ def test_replace_tag_2():
     aliases = { 'my-alias': {
         'text': 'link text',
         'alias': 'my-alias',
-        'url': 'my-alias.md'
+        'url': 'my-alias.md',
+        'link': 'my-alias.md',
     } }
     markdown = 'Test: [[my-alias|Alternate Text]]'
     result = re.sub(
@@ -98,7 +100,8 @@ def test_replace_tag_3():
     aliases = { 'my-alias': {
         'text': 'link text',
         'alias': 'my-alias',
-        'url': 'my-alias.md'
+        'url': 'my-alias.md',
+        'link': 'my-alias.md',
     } }
     markdown = 'Test: \\[[my-alias|Alternate Text]]'
     result = re.sub(
@@ -114,7 +117,8 @@ def test_replace_tag_4():
     aliases = { 'my-alias': {
         'text': 'link text',
         'alias': 'my-alias',
-        'url': 'my-alias.md'
+        'url': 'my-alias.md',
+        'link': 'my-alias.md',
     } }
     markdown = '\\[[ ! -d $HOME/myfolder ]]'
     result = re.sub(
@@ -130,7 +134,8 @@ def test_replace_tag_5():
     aliases = { 'my-alias': {
         'text': 'link text',
         'alias': 'my-alias',
-        'url': 'my-alias.md'
+        'url': 'my-alias.md',
+        'link': 'my-alias.md',
     } }
     markdown = 'Test: [[unknown]]'
     result = re.sub(
@@ -146,7 +151,8 @@ def test_replace_tag_6():
     aliases = { 'my-alias': {
         'text': None,
         'alias': 'my-alias',
-        'url': 'my-alias.md'
+        'url': 'my-alias.md',
+        'link': 'my-alias.md',
     } }
     markdown = 'Test: [[my-alias]]'
     result = re.sub(
@@ -162,7 +168,8 @@ def test_replace_tag_7():
     aliases = { ' my spacey alias ': {
         'text': 'The Text',
         'alias': ' my spacey alias ',
-        'url': 'my-alias.md'
+        'url': 'my-alias.md',
+        'link': 'my-alias.md',
     } }
     markdown = 'Test: [[ my spacey alias ]]'
     result = re.sub(
@@ -171,3 +178,20 @@ def test_replace_tag_7():
         markdown
     )
     assert result == 'Test: [The Text](my-alias.md)'
+
+def test_replace_tag_with_relative_link():
+    """Assert that alias 'link' key is used for link definition"""
+    logger = logging.getLogger()
+    aliases = { ' my spacey alias ': {
+        'text': 'The Text',
+        'alias': ' my spacey alias ',
+        'url': 'my-alias.md',
+        'link': 'my_custom_link',
+    } }
+    markdown = 'Test: [[ my spacey alias ]]'
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, aliases, logger, 'test.md'),
+        markdown
+    )
+    assert result == 'Test: [The Text](my_custom_link)'
