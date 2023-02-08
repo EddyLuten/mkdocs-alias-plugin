@@ -6,8 +6,9 @@ An MkDocs plugin allowing links to your pages using a custom alias.
 import logging
 import re
 from typing import Match
+from mkdocs.structure.files import File
 from mkdocs.plugins import BasePlugin
-from mkdocs.utils import meta, get_markdown_title
+from mkdocs.utils import meta, get_markdown_title, get_relative_url
 from mkdocs.config import config_options
 
 # The Regular Expression used to find alias tags
@@ -40,7 +41,8 @@ def replace_tag(
     match: Match,
     aliases: dict,
     log: logging.Logger,
-    page_path: str
+    page_file: File,
+    use_relative: bool,
 ):
     """Callback used in the sub function within on_page_markdown."""
     if match.group(1) is not None:
@@ -51,20 +53,25 @@ def replace_tag(
         log.warning(
             "Alias '%s' not found in '%s'",
             match.group(2),
-            page_path
+            page_file.src_path
         )
         return match.group(0) # return the input string
 
     text = alias['text'] if match.group(3) is None else match.group(3)
     if text is None:
         text = alias['url']
+
+    url = alias['url']
+    if use_relative:
+        url = get_relative_url(url, page_file.url)
+
     log.info(
         "replaced alias '%s' with '%s' to '%s'",
         alias['alias'],
         text,
-        alias['url']
+        url
     )
-    return f"[{text}]({alias['url']})"
+    return f"[{text}]({url})"
 
 class AliasPlugin(BasePlugin):
     """An extension of BasePlugin providing all of the aliasing logic.
@@ -78,6 +85,7 @@ class AliasPlugin(BasePlugin):
     """
     config_scheme = (
         ('verbose', config_options.Type(bool, default=False)),
+        ('use_relative_link', config_options.Type(bool, default=False)),
     )
     aliases = {}
     log = logging.getLogger(f'mkdocs.plugins.{__name__}')
@@ -105,7 +113,8 @@ class AliasPlugin(BasePlugin):
                 match,
                 self.aliases,
                 self.log,
-                self.current_page.file.src_path
+                self.current_page.file,
+                self.config['use_relative_link'],
             ),
             markdown
         )

@@ -102,6 +102,10 @@ plugins:
 
 You may use the optional `verbose` option to print more information about which aliases were used and defined during build. The default value is `false`.
 
+### `use_relative_link`
+
+You may use the optional `use_relative_link` option use relative links instead of absolute one. i.e. use `../../my/alias/path/` instead of `common_folder/my/alias/path/`.
+
 ## Troubleshooting
 
 ### The link text looks like a path or URL

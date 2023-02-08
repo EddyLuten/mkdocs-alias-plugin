@@ -4,7 +4,10 @@ Various unit tests for the non-mkdocs functions in plugin.py.
 """
 import logging
 import re
+from mkdocs.structure.files import File
 from alias.plugin import get_alias_names, get_page_title, replace_tag, ALIAS_TAG_REGEX
+
+PAGE_FILE = File("/folder1/folder4/folder5/test.md", "/src/", "/dest/", False)
 
 def test_get_page_title_1():
     """Test title from H1 tag extraction"""
@@ -71,7 +74,7 @@ def test_replace_tag_1():
     markdown = 'Test: [[my-alias]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, 'test.md'),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
         markdown
     )
     assert result == 'Test: [link text](my-alias.md)'
@@ -87,7 +90,7 @@ def test_replace_tag_2():
     markdown = 'Test: [[my-alias|Alternate Text]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, 'test.md'),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
         markdown
     )
     assert result == 'Test: [Alternate Text](my-alias.md)'
@@ -103,7 +106,7 @@ def test_replace_tag_3():
     markdown = 'Test: \\[[my-alias|Alternate Text]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, 'test.md'),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
         markdown
     )
     assert result == 'Test: [[my-alias|Alternate Text]]'
@@ -119,7 +122,7 @@ def test_replace_tag_4():
     markdown = '\\[[ ! -d $HOME/myfolder ]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, 'test.md'),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
         markdown
     )
     assert result == '[[ ! -d $HOME/myfolder ]]'
@@ -135,7 +138,7 @@ def test_replace_tag_5():
     markdown = 'Test: [[unknown]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, 'test.md'),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
         markdown
     )
     assert result == markdown
@@ -151,7 +154,7 @@ def test_replace_tag_6():
     markdown = 'Test: [[my-alias]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, 'test.md'),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
         markdown
     )
     assert result == 'Test: [my-alias.md](my-alias.md)'
@@ -167,7 +170,33 @@ def test_replace_tag_7():
     markdown = 'Test: [[ my spacey alias ]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, 'test.md'),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
         markdown
     )
     assert result == 'Test: [The Text](my-alias.md)'
+
+def test_replace_tag_with_relative_path():
+    """Replace alias with relative links"""
+    logger = logging.getLogger()
+    aliases = { 'my-alias': {
+        'text': 'link text',
+        'alias': 'my-alias',
+        'url': '/folder1/folder2/folder3/'
+    } }
+    markdown = 'Test: [[my-alias]]'
+
+    # Relative
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, True),
+        markdown
+    )
+    assert result == 'Test: [link text](../../folder2/folder3/)'
+
+    # Absolute
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
+        markdown
+    )
+    assert result == 'Test: [link text](/folder1/folder2/folder3/)'
