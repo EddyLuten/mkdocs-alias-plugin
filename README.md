@@ -150,6 +150,14 @@ pylint $(git ls-files '*.py') && pytest -vv
 
 ## Changelog
 
+### 0.5.0
+
+2023-02-08
+
+Adds the ability to use the `use_relative_link` config flag, which causes the plugin to generate relative links to the aliased document rather than absolute ones. This flag is useful for those who host their wikis in subdirectories.
+
+@SimonDelmas contributed this feature in PR #3. Thanks!
+
 ### 0.4.0
 
 2022-07-10

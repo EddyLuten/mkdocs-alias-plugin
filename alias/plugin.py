@@ -104,7 +104,7 @@ class AliasPlugin(BasePlugin):
         self.log.info("Defined %s alias(es).", len(self.aliases))
         self.aliases.clear()
 
-    def on_page_markdown(self, markdown, page, **_):
+    def on_page_markdown(self, markdown: str, *, page, config, files):
         """Replaces any alias tags on the page with markdown links."""
         self.current_page = page
         return re.sub(
