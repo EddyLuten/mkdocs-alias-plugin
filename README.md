@@ -63,6 +63,18 @@ If you'd like to supply your own link text instead on a link-by-link basis, you 
 The song references [[wuthering-heights|Wuthering Heights]].
 ```
 
+As of version 0.6.0, you can also use link anchors in your aliases:
+
+```md
+The song references [[wuthering-heights#references]].
+```
+
+Or, also using a title:
+
+```md
+The song references [[wuthering-heights#references|Wuthering Heights]].
+```
+
 Please refer to the [MkDocs documentation](https://www.mkdocs.org/user-guide/writing-your-docs/#yaml-style-meta-data) for more information on how the meta-data block is used.
 
 ### Multiple Aliases
@@ -149,6 +161,14 @@ pylint $(git ls-files '*.py') && pytest -vv
 ```
 
 ## Changelog
+
+### 0.6.0
+
+Adds support for page anchor links from within an alias. E.g.:
+
+```md
+[[my alias#my anchor]]
+````
 
 ### 0.5.0
 

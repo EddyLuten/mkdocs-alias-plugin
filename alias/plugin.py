@@ -48,7 +48,11 @@ def replace_tag(
     if match.group(1) is not None:
         # if the alias match was escaped, return the unescaped version
         return match.group(0)[1:]
-    alias = aliases.get(match.group(2))
+    # split the tag up in case there's an anchor in the link
+    tag_bits = ['']
+    if match.group(2) is not None:
+        tag_bits = str(match.group(2)).split('#')
+    alias = aliases.get(tag_bits[0])
     if alias is None:
         log.warning(
             "Alias '%s' not found in '%s'",
@@ -64,6 +68,8 @@ def replace_tag(
     url = alias['url']
     if use_relative:
         url = get_relative_url(url, page_file.url)
+    if len(tag_bits) > 1:
+        url = f"{url}#{tag_bits[1]}"
 
     log.info(
         "replaced alias '%s' with '%s' to '%s'",
