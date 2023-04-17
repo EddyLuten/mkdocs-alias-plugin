@@ -164,6 +164,8 @@ pylint $(git ls-files '*.py') && pytest -vv
 
 ### 0.6.0
 
+2023-04-17
+
 Adds support for page anchor links from within an alias. E.g.:
 
 ```md
