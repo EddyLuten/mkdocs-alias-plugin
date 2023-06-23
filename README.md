@@ -6,7 +6,7 @@ An MkDocs plugin allowing links to your pages using a custom alias such as `[[my
 
 The aliases are configured through the meta-sections of each page (see Usage below).
 
-If you like this plugin, you'll probably also like [mkdocs-categories-plugin](https://github.com/EddyLuten/mkdocs-categories-plugin).
+If you like this plugin, you'll probably also like [mkdocs-categories-plugin](https://github.com/EddyLuten/mkdocs-categories-plugin) and [mkdocs-live-edit-plugin](https://github.com/EddyLuten/mkdocs-live-edit-plugin).
 
 ## Rationale
 
