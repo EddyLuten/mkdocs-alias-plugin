@@ -7,7 +7,7 @@ long_description = (this_directory / 'README.md').read_text()
 
 setup(
     name='mkdocs-alias-plugin',
-    version='0.6.0',
+    version='0.7.0',
     description=
     'An MkDocs plugin allowing links to your pages using a custom alias',
     long_description=long_description,
