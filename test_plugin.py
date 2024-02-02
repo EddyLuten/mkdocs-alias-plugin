@@ -74,10 +74,10 @@ def test_replace_tag_1():
     markdown = 'Test: [[my-alias]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
         markdown
     )
-    assert result == 'Test: [link text](my-alias.md)'
+    assert result == 'Test: [link text](../../../my-alias.md)'
 
 def test_replace_tag_2():
     """Should replace an alias with a specified title"""
@@ -90,10 +90,10 @@ def test_replace_tag_2():
     markdown = 'Test: [[my-alias|Alternate Text]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
         markdown
     )
-    assert result == 'Test: [Alternate Text](my-alias.md)'
+    assert result == 'Test: [Alternate Text](../../../my-alias.md)'
 
 def test_replace_tag_3():
     """Should not replace an escaped alias"""
@@ -106,7 +106,7 @@ def test_replace_tag_3():
     markdown = 'Test: \\[[my-alias|Alternate Text]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
         markdown
     )
     assert result == 'Test: [[my-alias|Alternate Text]]'
@@ -122,7 +122,7 @@ def test_replace_tag_4():
     markdown = '\\[[ ! -d $HOME/myfolder ]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
         markdown
     )
     assert result == '[[ ! -d $HOME/myfolder ]]'
@@ -138,7 +138,7 @@ def test_replace_tag_5():
     markdown = 'Test: [[unknown]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
         markdown
     )
     assert result == markdown
@@ -154,10 +154,10 @@ def test_replace_tag_6():
     markdown = 'Test: [[my-alias]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
         markdown
     )
-    assert result == 'Test: [my-alias.md](my-alias.md)'
+    assert result == 'Test: [my-alias.md](../../../my-alias.md)'
 
 def test_replace_tag_7():
     """Should handle aliases with spaces"""
@@ -170,10 +170,10 @@ def test_replace_tag_7():
     markdown = 'Test: [[ my spacey alias ]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
         markdown
     )
-    assert result == 'Test: [The Text](my-alias.md)'
+    assert result == 'Test: [The Text](../../../my-alias.md)'
 
 def test_replace_tag_with_anchor():
     """Should handle aliases with URL anchors"""
@@ -186,10 +186,10 @@ def test_replace_tag_with_anchor():
     markdown = 'Test: [[my alias#anchor]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
         markdown
     )
-    assert result == 'Test: [The Text](my-alias.md#anchor)'
+    assert result == 'Test: [The Text](../../../my-alias.md#anchor)'
 
 def test_replace_tag_with_anchor2():
     """Should handle aliases with multiple URL anchors"""
@@ -202,10 +202,10 @@ def test_replace_tag_with_anchor2():
     markdown = 'Test: [[my alias#anchor#another ignored anchor]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
         markdown
     )
-    assert result == 'Test: [The Text](my-alias.md#anchor)'
+    assert result == 'Test: [The Text](../../../my-alias.md#anchor)'
 
 def test_replace_tag_with_anchor3():
     """Should handle aliases with an anchor and a title"""
@@ -218,33 +218,7 @@ def test_replace_tag_with_anchor3():
     markdown = 'Test: [[my alias#my anchor|The Title]]'
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
         markdown
     )
-    assert result == 'Test: [The Title](my-alias.md#my anchor)'
-
-def test_replace_tag_with_relative_path():
-    """Replace alias with relative links"""
-    logger = logging.getLogger()
-    aliases = { 'my-alias': {
-        'text': 'link text',
-        'alias': 'my-alias',
-        'url': '/folder1/folder2/folder3/'
-    } }
-    markdown = 'Test: [[my-alias]]'
-
-    # Relative
-    result = re.sub(
-        ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, True),
-        markdown
-    )
-    assert result == 'Test: [link text](../../folder2/folder3/)'
-
-    # Absolute
-    result = re.sub(
-        ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
-        markdown
-    )
-    assert result == 'Test: [link text](/folder1/folder2/folder3/)'
+    assert result == 'Test: [The Title](../../../my-alias.md#my anchor)'

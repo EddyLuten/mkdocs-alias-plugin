@@ -114,10 +114,6 @@ plugins:
 
 You may use the optional `verbose` option to print more information about which aliases were used and defined during build. The default value is `false`.
 
-### `use_relative_link`
-
-You may use the optional `use_relative_link` option use relative links instead of absolute one. i.e. use `../../my/alias/path/` instead of `common_folder/my/alias/path/`.
-
 ## Troubleshooting
 
 ### The link text looks like a path or URL
@@ -142,7 +138,7 @@ Aliases *must* be unique. Ensure that you're not redefining the same alias for a
 
 ## Local Development
 
-Installing a localy copy of the plugin:
+Installing a local copy of the plugin:
 
 ```zsh
 pip install -e /path/to/mkdocs-alias-plugin/
@@ -161,6 +157,12 @@ pylint $(git ls-files '*.py') && pytest -vv
 ```
 
 ## Changelog
+
+### 0.7.0
+
+2024-02-01
+
+Removed support for the `use_relative_link` option introduced in issue #3. As of 1.5.0, MkDocs prefers relative links to absolute links, which were the default of this package before. As of this version, all alias links generated are relative to the file they were linked from.
 
 ### 0.6.0
 

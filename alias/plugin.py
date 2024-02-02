@@ -41,8 +41,7 @@ def replace_tag(
     match: Match,
     aliases: dict,
     log: logging.Logger,
-    page_file: File,
-    use_relative: bool,
+    page_file: File
 ):
     """Callback used in the sub function within on_page_markdown."""
     if match.group(1) is not None:
@@ -65,9 +64,7 @@ def replace_tag(
     if text is None:
         text = alias['url']
 
-    url = alias['url']
-    if use_relative:
-        url = get_relative_url(url, page_file.url)
+    url = get_relative_url(alias['url'], page_file.src_uri)
     if len(tag_bits) > 1:
         url = f"{url}#{tag_bits[1]}"
 
@@ -91,7 +88,6 @@ class AliasPlugin(BasePlugin):
     """
     config_scheme = (
         ('verbose', config_options.Type(bool, default=False)),
-        ('use_relative_link', config_options.Type(bool, default=False)),
     )
     aliases = {}
     log = logging.getLogger(f'mkdocs.plugins.{__name__}')
@@ -110,7 +106,7 @@ class AliasPlugin(BasePlugin):
         self.log.info("Defined %s alias(es).", len(self.aliases))
         self.aliases.clear()
 
-    def on_page_markdown(self, markdown: str, *, page, config, files):
+    def on_page_markdown(self, markdown: str, *, page, **_):
         """Replaces any alias tags on the page with markdown links."""
         self.current_page = page
         return re.sub(
@@ -119,8 +115,7 @@ class AliasPlugin(BasePlugin):
                 match,
                 self.aliases,
                 self.log,
-                self.current_page.file,
-                self.config['use_relative_link'],
+                self.current_page.file
             ),
             markdown
         )
@@ -145,7 +140,7 @@ class AliasPlugin(BasePlugin):
                     if existing is not None:
                         self.log.warning(
                             "%s: alias %s already defined in %s, skipping.",
-                            file.url,
+                            file.src_uri,
                             alias,
                             existing['url']
                         )
@@ -158,7 +153,7 @@ class AliasPlugin(BasePlugin):
                             if 'text' in meta_data['alias']
                             else get_page_title(source, meta_data)
                         ),
-                        'url': f"/{file.url}",
+                        'url': file.src_uri,
                     }
                     self.log.info(
                         "Alias %s to %s",
