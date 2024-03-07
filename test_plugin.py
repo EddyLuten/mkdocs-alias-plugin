@@ -222,3 +222,19 @@ def test_replace_tag_with_anchor3():
         markdown
     )
     assert result == 'Test: [The Title](../../../my-alias.md#my anchor)'
+
+def test_plugin_shouldnt_break_with_text():
+    """An alias with the word 'text' in it shouldn't break the plugin"""
+    logger = logging.getLogger()
+    aliases = { 'text': {
+        'text': 'The Text',
+        'alias': 'text',
+        'url': 'my-alias.md'
+    } }
+    markdown = 'Test: [[text]]'
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        markdown
+    )
+    assert result == 'Test: [The Text](../../../my-alias.md)'

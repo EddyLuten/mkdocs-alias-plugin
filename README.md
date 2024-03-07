@@ -158,6 +158,10 @@ pylint $(git ls-files '*.py') && pytest -vv
 
 ## Changelog
 
+### 0.7.1
+
+**Bug Fix:** fixes a bug where any alias with the word "text" would break the plugin due to faulty logic. Reported in [#7](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/7)
+
 ### 0.7.0
 
 2024-02-01

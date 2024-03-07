@@ -150,7 +150,8 @@ class AliasPlugin(BasePlugin):
                         'alias': alias,
                         'text': (
                             meta_data['alias']['text']
-                            if 'text' in meta_data['alias']
+                            # if meta_data['alias'] is a dictionary and 'text' is a key
+                            if isinstance(meta_data['alias'], dict) and 'text' in meta_data['alias']
                             else get_page_title(source, meta_data)
                         ),
                         'url': file.src_uri,
