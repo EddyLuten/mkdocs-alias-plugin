@@ -2,7 +2,7 @@
 
 [![PyPI version](https://badge.fury.io/py/mkdocs-alias-plugin.svg)](https://pypi.org/project/mkdocs-alias-plugin/)  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT) ![example workflow](https://github.com/eddyluten/mkdocs-alias-plugin/actions/workflows/pylint.yml/badge.svg) [![Downloads](https://pepy.tech/badge/mkdocs-alias-plugin)](https://pepy.tech/project/mkdocs-alias-plugin) ![](https://github.com/eddyluten/mkdocs-alias-plugin/workflows/mkdocs-alias-plugin%20Tests/badge.svg)
 
-An MkDocs plugin allowing links to your pages using a custom alias such as `[[my-alias]]` or `[[my-alias|My Title]]`.
+The `mkdocs-alias-plugin` MkDocs plugin allows links to your pages using a custom alias such as `[[my-alias]]` or `[[my-alias|My Title]]`.
 
 The aliases are configured through the meta-sections of each page (see Usage below).
 
@@ -47,7 +47,7 @@ The song references [[wuthering-heights]].
 
 Which, after the page builds, renders as a regular link to your page.
 
-Or, a more advanced example by using the dictionary-style configuration instead to provide a different link title.
+A more advanced example would be to use the dictionary-style configuration instead of providing a different link title:
 
 ```yaml
 ---
@@ -57,7 +57,7 @@ alias:
 ---
 ```
 
-If you'd like to supply your own link text instead on a link-by-link basis, you can do so using a pipe to separate the title from the alias:
+If you'd like to supply a custom link text instead on a link-by-link basis, you can do so using a pipe to separate the title from the alias:
 
 ```md
 The song references [[wuthering-heights|Wuthering Heights]].
@@ -69,17 +69,19 @@ As of version 0.6.0, you can also use link anchors in your aliases:
 The song references [[wuthering-heights#references]].
 ```
 
-Or, also using a title:
+Or, using a custom title:
 
 ```md
 The song references [[wuthering-heights#references|Wuthering Heights]].
 ```
 
+As of version 0.8.0, you can enable the plugin option `use_anchor_titles` to replace anchor links with the text of the page heading that defined it. This behavior is opt-in to preserve backward compatibility.
+
 Please refer to the [MkDocs documentation](https://www.mkdocs.org/user-guide/writing-your-docs/#yaml-style-meta-data) for more information on how the meta-data block is used.
 
 ### Multiple Aliases
 
-As of version 0.3.0, it is possible to assign multiple aliases to a single page. This does come with the limitation that these aliases cannot define a per-alias title. The syntax for this is:
+As of version 0.3.0, assigning multiple aliases to a single page is possible. This feature does come with the limitation that these aliases cannot define a per-alias title and instead will use the page title. The syntax for this is:
 
 ```yaml
 ---
@@ -92,7 +94,7 @@ alias:
 
 ### Escaping Aliases (Escape Syntax)
 
-As of version 0.4.0, it is possible to escape aliases to prevent them being parsed by the plugin. This is useful if you use a similar double-bracket markup for a different purpose (e.g. shell scripts). The syntax for this feature is a leading backslash:
+As of version 0.4.0, it is possible to escape aliases to prevent them being parsed by the plugin. This is useful if you use a similar double-bracket markup for a different purpose (e.g. shell scripts in code blocks). The syntax for this feature is a leading backslash:
 
 ```md
 \[[this text will remain untouched]]
@@ -108,11 +110,16 @@ You may customize the plugin by passing options into the plugin's configuration 
 plugins:
     - alias:
         verbose: true
+        use_anchor_titles: true
 ```
 
 ### `verbose`
 
-You may use the optional `verbose` option to print more information about which aliases were used and defined during build. The default value is `false`.
+You may use the optional `verbose` option to print more information about which aliases were used and defined during the build process. The default value is `false`.
+
+### `use_anchor_titles`
+
+Setting this flag to true causes the plugin to replace an alias containing an anchor (`[[my-page#sub-heading]]`) with the text of the header that defined it. You can still override the title of the link as usual.
 
 ## Troubleshooting
 
@@ -120,7 +127,7 @@ You may use the optional `verbose` option to print more information about which 
 
 Your alias doesn't have link text defined *and* your page doesn't have a title H1 tag or a `title` attribute in its meta data section. Once you add this, your link will render with the appropriate text.
 
-### My alias is not being replaced
+### My alias is not replaced
 
 `WARNING  -  Alias 'my-alias' not found`
 
@@ -158,15 +165,19 @@ pylint $(git ls-files '*.py') && pytest -vv
 
 ## Changelog
 
+## 0.8.0
+
+This release adds functionality to replace the titles of aliases containing anchors with the text of the heading that defines them. Enable this feature by setting the plugin option `use_anchor_titles` to true. Feature request: [#8](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/8).
+
 ### 0.7.1
 
-**Bug Fix:** fixes a bug where any alias with the word "text" would break the plugin due to faulty logic. Reported in [#7](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/7)
+**Bug Fix:** fixes a bug where any alias with the word "text" would break the plugin due to faulty logic. Bug report: [#7](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/7).
 
 ### 0.7.0
 
 2024-02-01
 
-Removed support for the `use_relative_link` option introduced in issue #3. As of 1.5.0, MkDocs prefers relative links to absolute links, which were the default of this package before. As of this version, all alias links generated are relative to the file they were linked from.
+This release removes support for the `use_relative_link` option introduced in issue [#3](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/3). As of version 1.5.0, MkDocs prefers relative links to absolute links, which was this package's default before. As of this version, all alias links generated are relative to the file from where they were linked.
 
 ### 0.6.0
 
