@@ -165,6 +165,10 @@ pylint $(git ls-files '*.py') && pytest -vv
 
 ## Changelog
 
+## 0.8.1
+
+**Bug Fix:** fixes a bug where annotations would break older versions of Python 3. Bug report: [#9](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/9).
+
 ## 0.8.0
 
 This release adds functionality to replace the titles of aliases containing anchors with the text of the heading that defines them. Enable this feature by setting the plugin option `use_anchor_titles` to true. Feature request: [#8](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/8).
