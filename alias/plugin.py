@@ -2,6 +2,7 @@
 
 An MkDocs plugin allowing links to your pages using a custom alias.
 """
+from __future__ import annotations
 
 import logging
 import re
