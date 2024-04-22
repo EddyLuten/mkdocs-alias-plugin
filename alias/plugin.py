@@ -158,7 +158,7 @@ class AliasPlugin(BasePlugin):
         self.log.info("Defined %s alias(es).", len(self.aliases))
         self.aliases.clear()
 
-    def on_page_markdown(self, markdown: str, *, page: Page, **_):
+    def on_page_markdown(self, markdown: str, /, *, page: Page, **_):
         """Replaces any alias tags on the page with markdown links."""
         self.current_page = page
         return re.sub(
@@ -173,7 +173,7 @@ class AliasPlugin(BasePlugin):
             markdown
         )
 
-    def on_files(self, files: Files, **_):
+    def on_files(self, files: Files, /, **_):
         """When MkDocs loads its files, extract aliases from any Markdown files
         that were found.
         """
