@@ -38,6 +38,20 @@ def test_get_page_title_4():
     assert get_page_title(source, meta) == 'The actual title'
 
 
+def test_get_page_title_5():
+    """Test page with both meta title and icon enabled"""
+    source = "# Not the title\n\nsome text\n"
+    meta = {'title': 'The actual title', 'icon': 'path/to/my-icon'}
+    assert get_page_title(source, meta, include_icon=True) == ':path-to-my-icon: The actual title'
+
+
+def test_get_page_title_6():
+    """Test page with both meta title and icon but disabled"""
+    source = "# Not the title\n\nsome text\n"
+    meta = {'title': 'The actual title', 'icon': 'path/to/my-icon'}
+    assert get_page_title(source, meta, include_icon=False) == 'The actual title'
+
+
 def test_get_alias_name_1():
     """Test alias from meta extraction"""
     meta = {'alias': 'my-alias'}

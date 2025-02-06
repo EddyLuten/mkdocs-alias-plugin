@@ -50,14 +50,17 @@ def find_anchor_by_id(anchors: list[MarkdownAnchor], anchor_id: str) -> Markdown
     return None
 
 
-def get_page_title(page_src: str, meta_data: dict):
+def get_page_title(page_src: str, meta_data: dict, include_icon: bool = False):
     """Returns the title of the page. The title in the meta data section
     will take precedence over the H1 markdown title if both are provided."""
-    return (
-        meta_data['title']
-        if 'title' in meta_data and isinstance(meta_data['title'], str)
-        else get_markdown_title(page_src)
-    )
+    if 'title' in meta_data and isinstance(meta_data['title'], str):
+        title = meta_data['title']
+        if include_icon and 'icon' in meta_data and isinstance(meta_data['icon'], str):
+            icon = ':' + meta_data['icon'].replace('/', '-') + ':'
+            title = f'{icon} {title}'
+    else:
+        title = get_markdown_title(page_src)
+    return title
 
 
 def get_alias_names(meta_data: dict):
@@ -140,6 +143,7 @@ class AliasPlugin(BasePlugin):
     config_scheme = (
         ('verbose', config_options.Type(bool, default=False)),
         ('use_anchor_titles', config_options.Type(bool, default=False)),
+        ('use_page_icon', config_options.Type(bool, default=False)),
     )
     aliases = {}
     log = logging.getLogger(f'mkdocs.plugins.{__name__}')
@@ -211,7 +215,7 @@ class AliasPlugin(BasePlugin):
                             meta_data['alias']['text']
                             # if meta_data['alias'] is a dictionary and 'text' is a key
                             if isinstance(meta_data['alias'], dict) and 'text' in meta_data['alias']
-                            else get_page_title(source, meta_data)
+                            else get_page_title(source, meta_data, self.config['use_page_icon'])
                         ),
                         'url': file.src_uri,
                         'anchors': anchors,
