@@ -408,3 +408,27 @@ def test_plugin_should_link_to_anchor_on_current_page():
         page_file.content_string
     )
     assert result == 'Test: [Anchor](#anchor)\n\n## Anchor\n\nSome text'
+
+
+def test_get_alias_names_1():
+    """Test alias from meta extraction"""
+    meta = {'alias': 'my-alias'}
+    assert get_alias_names(meta) == ['my-alias']
+
+
+def test_get_alias_names_2():
+    """Test alias from empty meta extraction"""
+    meta = {}
+    assert get_alias_names(meta) is None
+
+
+def test_get_alias_names_3():
+    """Test alias from meta extraction using a custom key"""
+    meta = {'custom-key': 'my-alias'}
+    assert get_alias_names(meta, 'custom-key') == ['my-alias']
+
+
+def test_get_alias_names_4():
+    """Test alias from name/title pair"""
+    meta = {'alias': {'name': 'my-alias', 'title': 'My Title'}}
+    assert get_alias_names(meta, 'alias') == ['my-alias']

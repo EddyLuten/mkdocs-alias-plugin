@@ -77,6 +77,8 @@ The song references [[wuthering-heights#references|Wuthering Heights]].
 
 As of version 0.8.0, you can enable the plugin option `use_anchor_titles` to replace anchor links with the text of the page heading that defined it. This behavior is opt-in to preserve backward compatibility.
 
+As of version 0.9.0, you may also use `aliases` in addition to (or in place of) the `alias` key in the meta section of your pages. This is to provide some similarity to other Markdown based software that supports aliases, such as Obsidian.
+
 Please refer to the [MkDocs documentation](https://www.mkdocs.org/user-guide/writing-your-docs/#yaml-style-meta-data) for more information on how the meta-data block is used.
 
 ### Multiple Aliases
@@ -116,7 +118,9 @@ plugins:
 
 ### `verbose`
 
-You may use the optional `verbose` option to print more information about which aliases were used and defined during the build process. The default value is `false`.
+You may use the optional `verbose` option to print more information about which aliases were used and defined during the build process. A tab-delimited file named `aliases.log` will also be defined at the project root, containing a list of every alias defined by the wiki.
+
+The default value is `false` and should only be enabled when debugging issue with the plugin.
 
 ### `use_anchor_titles`
 
@@ -150,6 +154,13 @@ Aliases *must* be unique. Ensure that you're not redefining the same alias for a
 
 ## Local Development
 
+Upgrade pip and install the dependencies:
+
+```zsh
+python -m pip install --upgrade pip
+pip install mkdocs pytest pylint markdown setuptools
+```
+
 Installing a local copy of the plugin:
 
 ```zsh
@@ -174,8 +185,10 @@ pylint $(git ls-files '*.py') && pytest -vv
 
 **Features and Bug Fixes:**
 
-- Added the ability to use alias style links to anchors withing the current page, e.g.: `[[#my-anchor]]`
-- Adds support for page icons in link aliases, thank you @joapuiib for your [contribution](https://github.com/EddyLuten/mkdocs-alias-plugin/pull/15)!
+- Added the ability to use alias style links to anchors withing the current page, e.g.: `[[#my-anchor]]`.
+- Added support for page icons in link aliases, thank you @joapuiib for your [contribution](https://github.com/EddyLuten/mkdocs-alias-plugin/pull/15)!
+- Added support for using the key `alias` and/or `aliases` for defining page aliases in meta sections.
+- Changed verbose mode to now also generates a tab-delimited log file containing each alias in the wiki.
 
 ## 0.8.1
 

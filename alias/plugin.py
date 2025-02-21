@@ -63,11 +63,11 @@ def get_page_title(page_src: str, meta_data: dict, include_icon: bool = False):
     return title
 
 
-def get_alias_names(meta_data: dict):
+def get_alias_names(meta_data: dict, meta_key: str = 'alias') -> list[str] | None:
     """Returns the list of configured alias names."""
-    if len(meta_data) <= 0 or 'alias' not in meta_data:
+    if len(meta_data) <= 0 or meta_key not in meta_data:
         return None
-    aliases = meta_data['alias']
+    aliases = meta_data[meta_key]
     if isinstance(aliases, list):
         # If the alias meta data is a list, ensure that they're strings
         return list(filter(lambda value: isinstance(value, str), aliases))
@@ -197,46 +197,62 @@ class AliasPlugin(BasePlugin):
         """
         for file in filter(lambda f: f.is_documentation_page(), files):
             with open(file.abs_src_path, encoding='utf-8-sig', errors='strict') as handle:
-                source, meta_data = meta.get_data(handle.read())
-                alias_names = get_alias_names(meta_data)
-                if alias_names is None or len(alias_names) < 1:
+                self.process_file(file, handle)
+        # write the aliases to the aliases log file if the verbose option is set
+        if self.config['verbose']:
+            with open('aliases.log', 'w', encoding='utf-8') as log_file:
+                log_file.write("alias\ttitle\turl\n")
+                for alias in self.aliases.values():
+                    log_file.write(
+                        f"{alias['alias']}\t{alias['text']}\t{alias['url']}\n"
+                    )
+
+    def process_file(self, file, handle):
+        """Extract aliases from the given file and add them to the aliases"""
+        source, meta_data = meta.get_data(handle.read())
+        for section in ['alias', 'aliases']:
+            alias_names = get_alias_names(meta_data, section)
+            if alias_names is None or len(alias_names) < 1:
+                continue
+
+            # If the use_anchor_titles config option is set, parse the markdown
+            # and get the table of contents for the page
+            anchors: list[MarkdownAnchor] = []
+            if self.config['use_anchor_titles']:
+                anchors = get_markdown_toc(source)
+
+            if len(alias_names) > 1:
+                self.log.info(
+                    '%s defines %d aliases:', file.url, len(alias_names)
+                )
+            for alias in alias_names:
+                existing = self.aliases.get(alias)
+                if existing is not None:
+                    self.log.warning(
+                        "%s: alias %s already defined in %s, skipping.",
+                        file.src_uri,
+                        alias,
+                        existing['url']
+                    )
                     continue
 
-                # If the use_anchor_titles config option is set, parse the markdown
-                # and get the table of contents for the page
-                anchors: list[MarkdownAnchor] = []
-                if self.config['use_anchor_titles']:
-                    anchors = get_markdown_toc(source)
-
-                if len(alias_names) > 1:
-                    self.log.info(
-                        '%s defines %d aliases:', file.url, len(alias_names)
-                    )
-                for alias in alias_names:
-                    existing = self.aliases.get(alias)
-                    if existing is not None:
-                        self.log.warning(
-                            "%s: alias %s already defined in %s, skipping.",
-                            file.src_uri,
-                            alias,
-                            existing['url']
+                new_alias = {
+                    'alias': alias,
+                    'text': (
+                        meta_data[section]['text']
+                        # if meta_data['alias'] is a dictionary and 'text' is a key
+                        if (
+                            isinstance(meta_data[section], dict) and
+                            'text' in meta_data[section]
                         )
-                        continue
-
-                    new_alias = {
-                        'alias': alias,
-                        'text': (
-                            meta_data['alias']['text']
-                            # if meta_data['alias'] is a dictionary and 'text' is a key
-                            if isinstance(meta_data['alias'], dict) and 'text' in meta_data['alias']
-                            else get_page_title(source, meta_data, self.config['use_page_icon'])
-                        ),
-                        'url': file.src_uri,
-                        'anchors': anchors,
-                    }
-                    self.log.info(
-                        "Alias %s to %s",
-                        alias,
-                        new_alias['url']
-                    )
-                    self.aliases[alias] = new_alias
+                        else get_page_title(source, meta_data, self.config['use_page_icon'])
+                    ),
+                    'url': file.src_uri,
+                    'anchors': anchors,
+                }
+                self.log.info(
+                    "Alias %s to %s",
+                    alias,
+                    new_alias['url']
+                )
+                self.aliases[alias] = new_alias
