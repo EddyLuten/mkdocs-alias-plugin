@@ -165,6 +165,12 @@ pylint $(git ls-files '*.py') && pytest -vv
 
 ## Changelog
 
+## 0.9.0
+
+**Features and Bug Fixes:**
+
+- Added the ability to use alias style links to anchors withing the current page, e.g.: `[[#my-anchor]]`
+
 ## 0.8.1
 
 **Bug Fix:** fixes a bug where annotations would break older versions of Python 3. Bug report: [#9](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/9).

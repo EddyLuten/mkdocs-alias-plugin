@@ -4,6 +4,7 @@ Various unit tests for the non-mkdocs functions in plugin.py.
 """
 import logging
 import re
+
 from mkdocs.structure.files import File
 from alias.plugin import get_alias_names, get_page_title, replace_tag, ALIAS_TAG_REGEX
 
@@ -374,3 +375,22 @@ def test_plugin_should_use_custom_title_with_anchor_titles():
         markdown
     )
     assert result == 'Test: [Custom Title](../../../my-alias.md#nested)'
+
+
+def test_plugin_should_link_to_anchor_on_current_page():
+    """An alias with an anchor on the current page should link to it
+    without the page path"""
+    logger = logging.getLogger()
+    page_file = File(
+        'foo/bar.md',
+        src_dir=None,
+        dest_dir='/path/to/site',
+        use_directory_urls=False,
+    )
+    page_file.content_string = 'Test: [[#anchor]]\n\n## Anchor\n\nSome text'
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, {}, logger, page_file),
+        page_file.content_string
+    )
+    assert result == 'Test: [Anchor](#anchor)\n\n## Anchor\n\nSome text'
