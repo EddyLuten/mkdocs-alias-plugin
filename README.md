@@ -111,6 +111,7 @@ plugins:
     - alias:
         verbose: true
         use_anchor_titles: true
+        use_page_icon: true
 ```
 
 ### `verbose`
@@ -120,6 +121,10 @@ You may use the optional `verbose` option to print more information about which 
 ### `use_anchor_titles`
 
 Setting this flag to true causes the plugin to replace an alias containing an anchor (`[[my-page#sub-heading]]`) with the text of the header that defined it. You can still override the title of the link as usual.
+
+### `use_page_icons`
+
+Setting this flag to true will include the [page's icon](https://squidfunk.github.io/mkdocs-material/reference/?h=page+icon#setting-the-page-icon) in the alias substitution if it's set for a given page.
 
 ## Troubleshooting
 
@@ -170,6 +175,7 @@ pylint $(git ls-files '*.py') && pytest -vv
 **Features and Bug Fixes:**
 
 - Added the ability to use alias style links to anchors withing the current page, e.g.: `[[#my-anchor]]`
+- Adds support for page icons in link aliases, thank you @joapuiib for your [contribution](https://github.com/EddyLuten/mkdocs-alias-plugin/pull/15)!
 
 ## 0.8.1
 
