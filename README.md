@@ -183,6 +183,8 @@ pylint $(git ls-files '*.py') && pytest -vv
 
 ## 0.9.0
 
+2025-02-21
+
 **Features and Bug Fixes:**
 
 - Added the ability to use alias style links to anchors withing the current page, e.g.: `[[#my-anchor]]`.
@@ -192,13 +194,19 @@ pylint $(git ls-files '*.py') && pytest -vv
 
 ## 0.8.1
 
+2024-04-08
+
 **Bug Fix:** fixes a bug where annotations would break older versions of Python 3. Bug report: [#9](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/9).
 
 ## 0.8.0
 
+2024-04-06
+
 This release adds functionality to replace the titles of aliases containing anchors with the text of the heading that defines them. Enable this feature by setting the plugin option `use_anchor_titles` to true. Feature request: [#8](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/8).
 
 ### 0.7.1
+
+2024-04-07
 
 **Bug Fix:** fixes a bug where any alias with the word "text" would break the plugin due to faulty logic. Bug report: [#7](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/7).
 
