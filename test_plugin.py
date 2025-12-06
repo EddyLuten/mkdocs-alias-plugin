@@ -6,7 +6,7 @@ import logging
 import re
 
 from mkdocs.structure.files import File
-from alias.plugin import get_alias_names, get_page_title, replace_tag, ALIAS_TAG_REGEX
+from alias.plugin import get_alias_names, get_page_title, replace_tag, replace_reference, ALIAS_TAG_REGEX, REFERENCE_REGEX
 
 PAGE_FILE = File("/folder1/folder4/folder5/test.md", "/src/", "/dest/", False)
 
@@ -432,3 +432,36 @@ def test_get_alias_names_4():
     """Test alias from name/title pair"""
     meta = {'alias': {'name': 'my-alias', 'title': 'My Title'}}
     assert get_alias_names(meta, 'alias') == ['my-alias']
+
+
+def test_replace_reference():
+    """reference syntax: basic alias"""
+    logger = logging.getLogger()
+    aliases = {'my alias': {
+        'text': 'The Text',
+        'alias': 'my alias',
+        'url': 'my-alias.md'
+    }}
+    markdown = '[alias]: [[my alias]]'
+    result = re.sub(
+        REFERENCE_REGEX,
+        lambda match: replace_reference(match, aliases, logger, PAGE_FILE),
+        markdown
+    )
+    assert result == '[alias]: ../../../my-alias.md'
+
+def test_replace_reference():
+    """reference syntax: alias with reference"""
+    logger = logging.getLogger()
+    aliases = {'my alias': {
+        'text': 'The Text',
+        'alias': 'my alias',
+        'url': 'my-alias.md'
+    }}
+    markdown = '[alias]: [[my alias#anchor]]'
+    result = re.sub(
+        REFERENCE_REGEX,
+        lambda match: replace_reference(match, aliases, logger, PAGE_FILE),
+        markdown
+    )
+    assert result == '[alias]: ../../../my-alias.md#anchor'
