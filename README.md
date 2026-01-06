@@ -126,7 +126,7 @@ The default value is `false` and should only be enabled when debugging issue wit
 
 Setting this flag to true causes the plugin to replace an alias containing an anchor (`[[my-page#sub-heading]]`) with the text of the header that defined it. You can still override the title of the link as usual.
 
-### `use_page_icons`
+### `use_page_icon`
 
 Setting this flag to true will include the [page's icon](https://squidfunk.github.io/mkdocs-material/reference/?h=page+icon#setting-the-page-icon) in the alias substitution if it's set for a given page.
 
