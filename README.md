@@ -81,6 +81,14 @@ As of version 0.9.0, you may also use `aliases` in addition to (or in place of) 
 
 Please refer to the [MkDocs documentation](https://www.mkdocs.org/user-guide/writing-your-docs/#yaml-style-meta-data) for more information on how the meta-data block is used.
 
+As of version 0.10.0, you may use a specialized version of the alias syntax for aliases in footnotes:
+
+```markdown
+The plugin [`mkdocs-alias-plugin`][alias-plugin] is awesome!
+
+[alias-plugin]: https://github.com/EddyLuten/mkdocs-alias-plugin
+```
+
 ### Multiple Aliases
 
 As of version 0.3.0, assigning multiple aliases to a single page is possible. This feature does come with the limitation that these aliases cannot define a per-alias title and instead will use the page title. The syntax for this is:
@@ -180,6 +188,12 @@ pylint $(git ls-files '*.py') && pytest -vv
 ```
 
 ## Changelog
+
+## 0.10.0
+
+2026-01-07
+
+Adds the ability to use aliases in footnotes. Thank you @joapuiib for your [contribution](https://github.com/EddyLuten/mkdocs-alias-plugin/pull/22)!
 
 ## 0.9.0
 
