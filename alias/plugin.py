@@ -20,6 +20,16 @@ from mkdocs.utils import get_markdown_title, get_relative_url, meta
 # group 2: alias name
 # group 3: alias text
 ALIAS_TAG_REGEX = r"([\\])?\[\[([^|\]]+)\|?([^\]]+)?\]\]"
+# RE for finding reference-style alias links
+REFERENCE_REGEX = re.compile(
+    r'^'                                                # Start of the line
+    r'\[(?P<ref_id>[^\]]+)\]:\s*'                       # 1. [ref_id]:
+    r'\[\['
+    r'(?P<alias_name>[^|\]]+)'                          # 2. [[page-alias#anchor]]
+    r'\]\]'
+    r'[ \t]*$',                                         # Optional trailing spaces and end of line
+    re.MULTILINE
+)
 
 
 class MarkdownAnchor(TypedDict):
@@ -144,6 +154,31 @@ def replace_tag(
     return f"[{text}]({url})"
 
 
+def replace_reference(match, aliases, log, page_file):
+    """Callback used in the sub function within on_page_markdown for
+    reference-style links."""
+    ref_id = match.group('ref_id')
+    alias_name = match.group('alias_name')
+
+    tag_bits = alias_name.split('#', 1)
+    base_alias = tag_bits[0]
+    anchor = tag_bits[1] if len(tag_bits) > 1 else None
+
+    alias = aliases.get(base_alias)
+    if alias is None:
+        log.warning(f"Alias '{base_alias}' not found for reference link...")
+        match.group(0) # return original string
+
+    # Resolve the final URL and anchor
+    url = get_relative_url(alias['url'], page_file.src_uri)
+    if anchor:
+        url = f"{url}#{anchor}"
+
+    # Reconstruct the standard Markdown reference definition:
+    # [reference-id]: url
+    return f"[{ref_id}]: {url}"
+
+
 class AliasPlugin(BasePlugin):
     """An extension of BasePlugin providing all of the aliasing logic.
 
@@ -179,7 +214,21 @@ class AliasPlugin(BasePlugin):
     def on_page_markdown(self, markdown: str, /, *, page: Page, **_):
         """Replaces any alias tags on the page with markdown links."""
         self.current_page = page
-        return re.sub(
+
+        # Replace any reference-style links first
+        markdown = re.sub(
+            REFERENCE_REGEX,
+            lambda match: replace_reference(
+                match,
+                self.aliases,
+                self.log,
+                self.current_page.file
+            ),
+            markdown
+        )
+
+        # Replace any inline alias tags
+        markdown = re.sub(
             ALIAS_TAG_REGEX,
             lambda match: replace_tag(
                 match,
@@ -190,6 +239,7 @@ class AliasPlugin(BasePlugin):
             ),
             markdown
         )
+        return markdown
 
     def on_files(self, files: Files, /, **_):
         """When MkDocs loads its files, extract aliases from any Markdown files
