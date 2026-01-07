@@ -155,6 +155,8 @@ def replace_tag(
 
 
 def replace_reference(match, aliases, log, page_file):
+    """Callback used in the sub function within on_page_markdown for
+    reference-style links."""
     ref_id = match.group('ref_id')
     alias_name = match.group('alias_name')
 

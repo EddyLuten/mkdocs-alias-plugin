@@ -6,7 +6,14 @@ import logging
 import re
 
 from mkdocs.structure.files import File
-from alias.plugin import get_alias_names, get_page_title, replace_tag, replace_reference, ALIAS_TAG_REGEX, REFERENCE_REGEX
+from alias.plugin import (
+    get_alias_names,
+    get_page_title,
+    replace_tag,
+    replace_reference,
+    ALIAS_TAG_REGEX,
+    REFERENCE_REGEX,
+)
 
 PAGE_FILE = File("/folder1/folder4/folder5/test.md", "/src/", "/dest/", False)
 
@@ -450,8 +457,8 @@ def test_replace_reference():
     )
     assert result == '[alias]: ../../../my-alias.md'
 
-def test_replace_reference():
-    """reference syntax: alias with reference"""
+def test_replace_reference_anchor():
+    """reference syntax: alias with anchor"""
     logger = logging.getLogger()
     aliases = {'my alias': {
         'text': 'The Text',
