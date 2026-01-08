@@ -114,9 +114,8 @@ def replace_tag(
         if anchor_tag is not None:
             log.info(f"treating {matched} like an anchor to {anchor_tag['name']}")
             return f"[{anchor_tag['name']}](#{anchor})"
-        else:
-            log.warning(f"Anchor '{anchor}' not found in '{page_file.src_path}'")
-            return match.group(0)
+        log.warning(f"Anchor '{anchor}' not found in '{page_file.src_path}'")
+        return match.group(0)
 
     text = None
     anchor = tag_bits[1] if len(tag_bits) > 1 else None
