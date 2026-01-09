@@ -1,7 +1,7 @@
 The MIT License (MIT)
 =====================
 
-Copyright © 2022 Eddy Luten
+Copyright © 2022-2026 Eddy Luten
 
 Permission is hereby granted, free of charge, to any person
 obtaining a copy of this software and associated documentation

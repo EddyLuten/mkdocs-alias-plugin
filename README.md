@@ -189,11 +189,17 @@ pylint $(git ls-files '*.py') && pytest -vv
 
 ## Changelog
 
+## 0.10.1
+
+2026-01-08
+
+**Bug Fix**: Fixes a bug where adding an anchor to a bad reference would cause a fatal crash. Thank you @mdbenito for you [contribution](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/17) and @joapuiib for your [unit test coverage](https://github.com/EddyLuten/mkdocs-alias-plugin/pull/19)!
+
 ## 0.10.0
 
 2026-01-07
 
-Adds the ability to use aliases in footnotes. Thank you @joapuiib for your [contribution](https://github.com/EddyLuten/mkdocs-alias-plugin/pull/22)!
+**Feature**: Adds the ability to use aliases in footnotes. Thank you @joapuiib for your [contribution](https://github.com/EddyLuten/mkdocs-alias-plugin/pull/22)!
 
 ## 0.9.0
 
