@@ -266,6 +266,75 @@ def test_replace_tag_with_anchor3():
     assert result == 'Test: [The Title](../../../my-alias.md#my anchor)'
 
 
+def test_replace_tag_shouldnt_break_alias_not_found():
+    """An alias that doesn't exist shouldn't break the plugin"""
+    logger = logging.getLogger()
+    aliases = {'my alias': {
+        'text': 'The Text',
+        'alias': 'my alias',
+        'url': 'my-alias.md'
+    }}
+    markdown = 'Test: [[unknown]]'
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        markdown
+    )
+    assert result == markdown
+
+
+def test_replace_tag_shouldnt_break_alias_not_found_with_anchor():
+    """An alias that doesn't exist shouldn't break the plugin"""
+    logger = logging.getLogger()
+    aliases = {'my alias': {
+        'text': 'The Text',
+        'alias': 'my alias',
+        'url': 'my-alias.md'
+    }}
+    markdown = 'Test: [[unknown#anchor]]'
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        markdown
+    )
+    assert result == markdown
+
+
+def test_replace_tag_shouldnt_break_alias_not_found_with_text():
+    """An alias that doesn't exist shouldn't break the plugin"""
+    logger = logging.getLogger()
+    aliases = {'my alias': {
+        'text': 'The Text',
+        'alias': 'my alias',
+        'url': 'my-alias.md'
+    }}
+    markdown = 'Test: [[unknown|Some bad reference]]'
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        markdown
+    )
+    assert result == markdown
+
+
+def test_replace_tag_shouldnt_break_alias_not_found_with_text_and_anchor():
+    """An alias that doesn't exist shouldn't break the plugin"""
+    logger = logging.getLogger()
+    aliases = {'my alias': {
+        'text': 'The Text',
+        'alias': 'my alias',
+        'url': 'my-alias.md'
+    }}
+    markdown = 'Test: [[unknown#anchor|Some bad reference]]'
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        markdown
+    )
+    assert result == markdown
+
+
+
 def test_plugin_shouldnt_break_with_text():
     """An alias with the word 'text' in it shouldn't break the plugin"""
     logger = logging.getLogger()
@@ -415,6 +484,32 @@ def test_plugin_should_link_to_anchor_on_current_page():
         page_file.content_string
     )
     assert result == 'Test: [Anchor](#anchor)\n\n## Anchor\n\nSome text'
+
+
+def test_plugin_should_not_break_on_anchor_not_found_on_current_page():
+    """An alias that doesn't exist shouldn't break the plugin"""
+    logger = logging.getLogger()
+    page_file = File(
+        'foo/bar.md',
+        src_dir=None,
+        dest_dir='/path/to/site',
+        use_directory_urls=False,
+    )
+    page_file.content_string = 'Test: [[#anchor]]\n\n## Anchor\n\nSome text'
+
+
+    aliases = {'my alias': {
+        'text': 'The Text',
+        'alias': 'my alias',
+        'url': 'my-alias.md'
+    }}
+    markdown = 'Test: [[#not-anchor]]'
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, aliases, logger, page_file),
+        markdown
+    )
+    assert result == markdown
 
 
 def test_get_alias_names_1():
