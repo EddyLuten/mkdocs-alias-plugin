@@ -109,22 +109,23 @@ def replace_tag(
     # unless the alias is an anchor tag, then try to find the anchor tag
     # and replace it with the anchor's title
     if alias is None:
-        if len(tag_bits) < 2:
+        matched = str(match.group(2))
+        if len(tag_bits) < 2 or not matched.startswith('#'):
             log.warning(
                 "Alias '%s' not found in '%s'",
                 match.group(2),
                 page_file.src_path
             )
             return match.group(0) # return the input string
-        anchor = tag_bits[1]
-        matched = match.group(2)
         # using the [[#anchor]] syntax to link within the current page:
-        if str(matched).startswith('#'):
-            anchors = get_markdown_toc(page_file.content_string)
-            anchor_tag = find_anchor_by_id(anchors, anchor)
-            if anchor_tag is not None:
-                log.info(f"treating {matched} like an anchor to {anchor_tag['name']}")
-                return f"[{anchor_tag['name']}](#{anchor})"
+        anchor = tag_bits[1]
+        anchors = get_markdown_toc(page_file.content_string)
+        anchor_tag = find_anchor_by_id(anchors, anchor)
+        if anchor_tag is not None:
+            log.info(f"treating {matched} like an anchor to {anchor_tag['name']}")
+            return f"[{anchor_tag['name']}](#{anchor})"
+        log.warning(f"Anchor '{anchor}' not found in '{page_file.src_path}'")
+        return match.group(0)
 
     text = None
     anchor = tag_bits[1] if len(tag_bits) > 1 else None
