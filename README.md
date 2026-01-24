@@ -81,14 +81,6 @@ As of version 0.9.0, you may also use `aliases` in addition to (or in place of) 
 
 Please refer to the [MkDocs documentation](https://www.mkdocs.org/user-guide/writing-your-docs/#yaml-style-meta-data) for more information on how the meta-data block is used.
 
-As of version 0.10.0, you may use a specialized version of the alias syntax for aliases in footnotes:
-
-```markdown
-The plugin [`mkdocs-alias-plugin`][alias-plugin] is awesome!
-
-[alias-plugin]: https://github.com/EddyLuten/mkdocs-alias-plugin
-```
-
 ### Multiple Aliases
 
 As of version 0.3.0, assigning multiple aliases to a single page is possible. This feature does come with the limitation that these aliases cannot define a per-alias title and instead will use the page title. The syntax for this is:
@@ -111,6 +103,18 @@ As of version 0.4.0, it is possible to escape aliases to prevent them being pars
 
 [[this text will be parsed as an alias]]
 ```
+
+### Footnote-Style Aliases
+
+As of version 0.10.0, you may use a specialized version of the alias syntax for aliases in footnotes:
+
+```md
+The plugin [`mkdocs-alias-plugin`][alias-plugin] is awesome!
+
+[alias-plugin]: https://github.com/EddyLuten/mkdocs-alias-plugin
+```
+
+Since this formats footnote-style links using a different syntax than valid Markdown, your linter may object and automatically remove the links upon saving. To get around this for markdownlint, disable rule "MD053" in your `.markdownlint.json` file.
 
 ## Options
 
@@ -160,6 +164,14 @@ You're getting a message resembling this in your output:
 
 Aliases *must* be unique. Ensure that you're not redefining the same alias for a different page. Rename one of them and the warning should go away.
 
+### Aliases with alternative titles break $my_markdown_tool
+
+This is a limitation of extending the Markdown syntax with non-standard features, which this MkDocs plugin does. Within Markdown tables, rather than using the standard alias links (`[[the-alias|The Title]]`), I recommend you use [footnote-style aliases](#footnote-style-aliases) instead to prevent breaking formatters and tools unaware of this plugin's existence. See [issue #24](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/24) for more context.
+
+### Footnote links disappear when I save my file
+
+Since markdownlint isn't aware of alias-style links, the links are considered "unused" by the linter. To get around this, disable rule "MD053" in your `.markdownlint.json` file.
+
 ## Local Development
 
 Upgrade pip and install the dependencies:
@@ -169,7 +181,7 @@ python -m pip install --upgrade pip
 pip install mkdocs pytest pylint markdown setuptools
 ```
 
-Installing a local copy of the plugin:
+Installing a local copy of the plugin (potentially from your MkDoc's venv location):
 
 ```zsh
 pip install -e /path/to/mkdocs-alias-plugin/
