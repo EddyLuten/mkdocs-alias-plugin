@@ -201,19 +201,19 @@ pylint $(git ls-files '*.py') && pytest -vv
 
 ## Changelog
 
-## 0.10.1
+### 0.10.1
 
 2026-01-08
 
 **Bug Fix**: Fixes a bug where adding an anchor to a bad reference would cause a fatal crash. Thank you @mdbenito for you [contribution](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/17) and @joapuiib for your [unit test coverage](https://github.com/EddyLuten/mkdocs-alias-plugin/pull/19)!
 
-## 0.10.0
+### 0.10.0
 
 2026-01-07
 
 **Feature**: Adds the ability to use aliases in footnotes. Thank you @joapuiib for your [contribution](https://github.com/EddyLuten/mkdocs-alias-plugin/pull/22)!
 
-## 0.9.0
+### 0.9.0
 
 2025-02-21
 
@@ -224,13 +224,13 @@ pylint $(git ls-files '*.py') && pytest -vv
 - Added support for using the key `alias` and/or `aliases` for defining page aliases in meta sections.
 - Changed verbose mode to now also generates a tab-delimited log file containing each alias in the wiki.
 
-## 0.8.1
+### 0.8.1
 
 2024-04-08
 
 **Bug Fix:** fixes a bug where annotations would break older versions of Python 3. Bug report: [#9](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/9).
 
-## 0.8.0
+### 0.8.0
 
 2024-04-06
 
