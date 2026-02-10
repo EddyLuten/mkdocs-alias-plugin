@@ -172,6 +172,14 @@ This is a limitation of extending the Markdown syntax with non-standard features
 
 Since markdownlint isn't aware of alias-style links, the links are considered "unused" by the linter. To get around this, disable rule "MD053" in your `.markdownlint.json` file.
 
+### How do I use square brackets in an alias?
+
+To use square brackets in the custom substitution text of an alias, you can escape them with a backslash (`\`). For example:
+
+```md
+[[the-alias|The \[bracketed\] Title]]
+```
+
 ## Local Development
 
 Upgrade pip and install the dependencies:
@@ -200,6 +208,12 @@ pylint $(git ls-files '*.py') && pytest -vv
 ```
 
 ## Changelog
+
+### 0.10.2
+
+2026-02-09
+
+**Bug Fix**: Fixes a bug where escaped square brackets in an alias would not be included in the generated link.
 
 ### 0.10.1
 
