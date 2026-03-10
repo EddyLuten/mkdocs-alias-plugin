@@ -15,6 +15,7 @@ from alias.plugin import (
     get_page_title,
     replace_reference,
     replace_tag,
+    ReplaceTagContext,
 )
 
 PAGE_FILE = File("/folder1/folder4/folder5/test.md", "/src/", "/dest/", False)
@@ -103,14 +104,17 @@ def test_get_multiple_aliases():
 
 def test_replace_tag_1():
     """Should match a simple alias tag"""
-    logger = logging.getLogger()
-    aliases = {
-        "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[my-alias]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [link text](../../../my-alias.md)"
@@ -118,14 +122,17 @@ def test_replace_tag_1():
 
 def test_replace_tag_2():
     """Should replace an alias with a specified title"""
-    logger = logging.getLogger()
-    aliases = {
-        "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases = {
+            "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[my-alias|Alternate Text]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [Alternate Text](../../../my-alias.md)"
@@ -133,14 +140,17 @@ def test_replace_tag_2():
 
 def test_replace_tag_3():
     """Should not replace an escaped alias"""
-    logger = logging.getLogger()
-    aliases = {
-        "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: \\[[my-alias|Alternate Text]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [[my-alias|Alternate Text]]"
@@ -148,14 +158,17 @@ def test_replace_tag_3():
 
 def test_replace_tag_4():
     """Should not parse an escaped alias"""
-    logger = logging.getLogger()
-    aliases = {
-        "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "\\[[ ! -d $HOME/myfolder ]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "[[ ! -d $HOME/myfolder ]]"
@@ -163,14 +176,17 @@ def test_replace_tag_4():
 
 def test_replace_tag_5():
     """Should return the original string if the alias wasn't found"""
-    logger = logging.getLogger()
-    aliases = {
-        "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[unknown]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == markdown
@@ -178,12 +194,15 @@ def test_replace_tag_5():
 
 def test_replace_tag_6():
     """Should use the URL as text if the text wasn't set"""
-    logger = logging.getLogger()
-    aliases = {"my-alias": {"text": None, "alias": "my-alias", "url": "my-alias.md"}}
+    context = ReplaceTagContext(
+        log=logging.getLogger(),
+        aliases={"my-alias": {"text": None, "alias": "my-alias", "url": "my-alias.md"}},
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[my-alias]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [my-alias.md](../../../my-alias.md)"
@@ -191,18 +210,21 @@ def test_replace_tag_6():
 
 def test_replace_tag_7():
     """Should handle aliases with spaces"""
-    logger = logging.getLogger()
-    aliases = {
-        " my spacey alias ": {
-            "text": "The Text",
-            "alias": " my spacey alias ",
-            "url": "my-alias.md",
-        }
-    }
+    context = ReplaceTagContext(
+        aliases={
+            " my spacey alias ": {
+                "text": "The Text",
+                "alias": " my spacey alias ",
+                "url": "my-alias.md",
+            }
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[ my spacey alias ]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [The Text](../../../my-alias.md)"
@@ -210,14 +232,17 @@ def test_replace_tag_7():
 
 def test_replace_tag_with_anchor():
     """Should handle aliases with URL anchors"""
-    logger = logging.getLogger()
-    aliases = {
-        "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[my alias#anchor]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [The Text](../../../my-alias.md#anchor)"
@@ -225,14 +250,17 @@ def test_replace_tag_with_anchor():
 
 def test_replace_tag_with_anchor2():
     """Should handle aliases with multiple URL anchors"""
-    logger = logging.getLogger()
-    aliases = {
-        "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[my alias#anchor#another ignored anchor]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [The Text](../../../my-alias.md#anchor)"
@@ -240,14 +268,17 @@ def test_replace_tag_with_anchor2():
 
 def test_replace_tag_with_anchor3():
     """Should handle aliases with an anchor and a title"""
-    logger = logging.getLogger()
-    aliases = {
-        "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[my alias#my anchor|The Title]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [The Title](../../../my-alias.md#my anchor)"
@@ -255,14 +286,17 @@ def test_replace_tag_with_anchor3():
 
 def test_replace_tag_shouldnt_break_alias_not_found():
     """An alias that doesn't exist shouldn't break the plugin"""
-    logger = logging.getLogger()
-    aliases = {
-        "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[unknown]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == markdown
@@ -270,14 +304,17 @@ def test_replace_tag_shouldnt_break_alias_not_found():
 
 def test_replace_tag_shouldnt_break_alias_not_found_with_anchor():
     """An alias that doesn't exist shouldn't break the plugin"""
-    logger = logging.getLogger()
-    aliases = {
-        "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[unknown#anchor]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == markdown
@@ -285,14 +322,17 @@ def test_replace_tag_shouldnt_break_alias_not_found_with_anchor():
 
 def test_replace_tag_shouldnt_break_alias_not_found_with_text():
     """An alias that doesn't exist shouldn't break the plugin"""
-    logger = logging.getLogger()
-    aliases = {
-        "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[unknown|Some bad reference]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == markdown
@@ -300,14 +340,17 @@ def test_replace_tag_shouldnt_break_alias_not_found_with_text():
 
 def test_replace_tag_shouldnt_break_alias_not_found_with_text_and_anchor():
     """An alias that doesn't exist shouldn't break the plugin"""
-    logger = logging.getLogger()
-    aliases = {
-        "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[unknown#anchor|Some bad reference]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == markdown
@@ -315,12 +358,15 @@ def test_replace_tag_shouldnt_break_alias_not_found_with_text_and_anchor():
 
 def test_plugin_shouldnt_break_with_text():
     """An alias with the word 'text' in it shouldn't break the plugin"""
-    logger = logging.getLogger()
-    aliases = {"text": {"text": "The Text", "alias": "text", "url": "my-alias.md"}}
+    context = ReplaceTagContext(
+        aliases={"text": {"text": "The Text", "alias": "text", "url": "my-alias.md"}},
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[text]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [The Text](../../../my-alias.md)"
@@ -329,19 +375,23 @@ def test_plugin_shouldnt_break_with_text():
 def test_plugin_should_replace_anchors_with_titles():
     """An alias with an anchor should be replaced with the title if the
     config option is set"""
-    logger = logging.getLogger()
-    aliases = {
-        "my alias": {
-            "text": "The Text",
-            "alias": "my alias",
-            "url": "my-alias.md",
-            "anchors": [{"id": "anchor", "name": "The Anchor"}],
-        }
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {
+                "text": "The Text",
+                "alias": "my alias",
+                "url": "my-alias.md",
+                "anchors": [{"id": "anchor", "name": "The Anchor"}],
+            }
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+        use_anchor_titles=True,
+    )
     markdown = "Test: [[my alias#anchor]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, True),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [The Anchor](../../../my-alias.md#anchor)"
@@ -350,19 +400,23 @@ def test_plugin_should_replace_anchors_with_titles():
 def test_plugin_should_note_replace_anchors_with_titles():
     """An alias with an anchor should be NOT replaced with the title if the
     config option is not set"""
-    logger = logging.getLogger()
-    aliases = {
-        "my alias": {
-            "text": "The Text",
-            "alias": "my alias",
-            "url": "my-alias.md",
-            "anchors": [{"id": "anchor", "name": "The Anchor"}],
-        }
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {
+                "text": "The Text",
+                "alias": "my alias",
+                "url": "my-alias.md",
+                "anchors": [{"id": "anchor", "name": "The Anchor"}],
+            }
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+        use_anchor_titles=False,
+    )
     markdown = "Test: [[my alias#anchor]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, False),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [The Text](../../../my-alias.md#anchor)"
@@ -371,25 +425,29 @@ def test_plugin_should_note_replace_anchors_with_titles():
 def test_plugin_should_replace_anchors_with_nesting():
     """An alias with an anchor should be replaced with the title if the
     config option is set with the appropriate nested child anchor"""
-    logger = logging.getLogger()
-    aliases = {
-        "my alias": {
-            "text": "The Text",
-            "alias": "my alias",
-            "url": "my-alias.md",
-            "anchors": [
-                {
-                    "id": "anchor",
-                    "name": "The Anchor",
-                    "children": [{"id": "nested", "name": "The Nested Anchor"}],
-                }
-            ],
-        }
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {
+                "text": "The Text",
+                "alias": "my alias",
+                "url": "my-alias.md",
+                "anchors": [
+                    {
+                        "id": "anchor",
+                        "name": "The Anchor",
+                        "children": [{"id": "nested", "name": "The Nested Anchor"}],
+                    }
+                ],
+            }
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+        use_anchor_titles=True,
+    )
     markdown = "Test: [[my alias#nested]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, True),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [The Nested Anchor](../../../my-alias.md#nested)"
@@ -398,19 +456,23 @@ def test_plugin_should_replace_anchors_with_nesting():
 def test_plugin_should_function_as_usual_without_anchors():
     """An alias with an anchor, with the config option set to true, but no
     anchors should still function as usual"""
-    logger = logging.getLogger()
-    aliases = {
-        "my alias": {
-            "text": "The Text",
-            "alias": "my alias",
-            "url": "my-alias.md",
-            "anchors": [],
-        }
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {
+                "text": "The Text",
+                "alias": "my alias",
+                "url": "my-alias.md",
+                "anchors": [],
+            }
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+        use_anchor_titles=True,
+    )
     markdown = "Test: [[my alias#anchor]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, True),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [The Text](../../../my-alias.md#anchor)"
@@ -419,25 +481,29 @@ def test_plugin_should_function_as_usual_without_anchors():
 def test_plugin_should_use_custom_title_with_anchor_titles():
     """An alias with an anchor, with the config option set to true, with
     anchors, but with a custom title should use the custom title"""
-    logger = logging.getLogger()
-    aliases = {
-        "my alias": {
-            "text": "The Text",
-            "alias": "my alias",
-            "url": "my-alias.md",
-            "anchors": [
-                {
-                    "id": "anchor",
-                    "name": "The Anchor",
-                    "children": [{"id": "nested", "name": "The Nested Anchor"}],
-                }
-            ],
-        }
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {
+                "text": "The Text",
+                "alias": "my alias",
+                "url": "my-alias.md",
+                "anchors": [
+                    {
+                        "id": "anchor",
+                        "name": "The Anchor",
+                        "children": [{"id": "nested", "name": "The Nested Anchor"}],
+                    }
+                ],
+            }
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+        use_anchor_titles=True,
+    )
     markdown = "Test: [[my alias#nested|Custom Title]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE, True),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [Custom Title](../../../my-alias.md#nested)"
@@ -446,7 +512,6 @@ def test_plugin_should_use_custom_title_with_anchor_titles():
 def test_plugin_should_link_to_anchor_on_current_page():
     """An alias with an anchor on the current page should link to it
     without the page path"""
-    logger = logging.getLogger()
     page_file = File(
         "foo/bar.md",
         src_dir=None,
@@ -454,9 +519,14 @@ def test_plugin_should_link_to_anchor_on_current_page():
         use_directory_urls=False,
     )
     page_file.content_string = "Test: [[#anchor]]\n\n## Anchor\n\nSome text"
+    context = ReplaceTagContext(
+        aliases={},
+        log=logging.getLogger(),
+        page_file=page_file,
+    )
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, {}, logger, page_file),
+        lambda match: replace_tag(match, context),
         page_file.content_string,
     )
     assert result == "Test: [Anchor](#anchor)\n\n## Anchor\n\nSome text"
@@ -464,7 +534,6 @@ def test_plugin_should_link_to_anchor_on_current_page():
 
 def test_plugin_should_not_break_on_anchor_not_found_on_current_page():
     """An alias that doesn't exist shouldn't break the plugin"""
-    logger = logging.getLogger()
     page_file = File(
         "foo/bar.md",
         src_dir=None,
@@ -472,14 +541,17 @@ def test_plugin_should_not_break_on_anchor_not_found_on_current_page():
         use_directory_urls=False,
     )
     page_file.content_string = "Test: [[#anchor]]\n\n## Anchor\n\nSome text"
-
-    aliases = {
-        "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=page_file,
+    )
     markdown = "Test: [[#not-anchor]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, page_file),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == markdown
@@ -511,14 +583,17 @@ def test_get_alias_names_4():
 
 def test_replace_reference():
     """reference syntax: basic alias"""
-    logger = logging.getLogger()
-    aliases = {
-        "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "[alias]: [[my alias]]"
     result = re.sub(
         REFERENCE_REGEX,
-        lambda match: replace_reference(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_reference(match, context),
         markdown,
     )
     assert result == "[alias]: ../../../my-alias.md"
@@ -526,14 +601,17 @@ def test_replace_reference():
 
 def test_replace_reference_anchor():
     """reference syntax: alias with anchor"""
-    logger = logging.getLogger()
-    aliases = {
-        "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "[alias]: [[my alias#anchor]]"
     result = re.sub(
         REFERENCE_REGEX,
-        lambda match: replace_reference(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_reference(match, context),
         markdown,
     )
     assert result == "[alias]: ../../../my-alias.md#anchor"
@@ -541,14 +619,17 @@ def test_replace_reference_anchor():
 
 def test_accept_escaped_brackets_1():
     """allow escaping square brackets within the alias"""
-    logger = logging.getLogger()
-    aliases = {
-        "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[my-alias|Alternate \\[alt\\] Text]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [Alternate \\[alt\\] Text](../../../my-alias.md)"
@@ -556,14 +637,114 @@ def test_accept_escaped_brackets_1():
 
 def test_dont_accept_unescaped_brackets():
     """don't allow unescaped square brackets within the alias"""
-    logger = logging.getLogger()
-    aliases = {
-        "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
-    }
+    context = ReplaceTagContext(
+        aliases={
+            "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
     markdown = "Test: [[my-alias|Alternate [alt] Text]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
-        lambda match: replace_tag(match, aliases, logger, PAGE_FILE),
+        lambda match: replace_tag(match, context),
         markdown,
     )
     assert result == "Test: [[my-alias|Alternate [alt] Text]]"
+
+
+def test_interwiki_alias_basic():
+    """Test interwiki alias replacement without a title"""
+    context = ReplaceTagContext(
+        aliases={},
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+        interwiki={"wp": "https://en.wikipedia.org/wiki/{{alias}}"},
+    )
+    markdown = "Test: [[wp:Python (programming language)]]"
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, context),
+        markdown,
+    )
+    assert result == (
+        "Test: [Python (programming language)]"
+        "(https://en.wikipedia.org/wiki/Python%20%28programming%20language%29)"
+    )
+
+
+def test_interwiki_alias_basic_with_anchor():
+    """Test interwiki alias replacement without a title with an anchor"""
+    context = ReplaceTagContext(
+        aliases={},
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+        interwiki={"wp": "https://en.wikipedia.org/wiki/{{alias}}"},
+    )
+    markdown = "Test: [[wp:Python (programming language)#History]]"
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, context),
+        markdown,
+    )
+    assert result == (
+        "Test: [Python (programming language)#History]"
+        "(https://en.wikipedia.org/wiki/Python%20%28programming%20language%29%23History)"
+    )
+
+
+def test_interwiki_alias_with_title():
+    """Test interwiki alias replacement with a title"""
+    context = ReplaceTagContext(
+        aliases={},
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+        interwiki={"wp": "https://en.wikipedia.org/wiki/{{alias}}"},
+    )
+    markdown = "Test: [[wp:Python (programming language)|Wikipedia Article]]"
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, context),
+        markdown,
+    )
+    assert result == (
+        "Test: [Wikipedia Article]"
+        "(https://en.wikipedia.org/wiki/Python%20%28programming%20language%29)"
+    )
+
+
+def test_interwiki_prefix_not_in_interwiki():
+    """Test that an interwiki alias with a prefix not in the interwiki config is not replaced"""
+    context = ReplaceTagContext(
+        aliases={},
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+        interwiki={"wp": "https://en.wikipedia.org/wiki/{{alias}}"},
+    )
+    markdown = "Test: [[unknown:Python (programming language)]]"
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, context),
+        markdown,
+    )
+    assert result == "Test: [[unknown:Python (programming language)]]"
+
+
+def test_interwiki_alias_with_anchor_and_title():
+    """Test interwiki alias replacement with an anchor and a title"""
+    context = ReplaceTagContext(
+        aliases={},
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+        interwiki={"wp": "https://en.wikipedia.org/wiki/{{alias}}"},
+    )
+    markdown = "Test: [[wp:Python (programming language)#History|History]]"
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, context),
+        markdown,
+    )
+    assert result == (
+        "Test: [History]"
+        "(https://en.wikipedia.org/wiki/Python%20%28programming%20language%29%23History)"
+    )

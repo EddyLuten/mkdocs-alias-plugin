@@ -116,6 +116,22 @@ The plugin [`mkdocs-alias-plugin`][alias-plugin] is awesome!
 
 Since this formats footnote-style links using a different syntax than valid Markdown, your linter may object and automatically remove the links upon saving. To get around this for markdownlint, disable rule "MD053" in your `.markdownlint.json` file.
 
+### Interwiki Links
+
+As of version 0.11.0, you may use a specialized version of the alias syntax to link to external sources defined in your alias plugin options (see "Options" below):
+
+```md
+[[w:Hypertext]]
+```
+
+Or, defining a custom title:
+
+```md
+[[[w:Hypertext|The Wikipedia Article on Hypertext]]]
+```
+
+Including anchors in the link is also allowed.
+
 ## Options
 
 You may customize the plugin by passing options into the plugin's configuration sections in `mkdocs.yml`:
@@ -126,6 +142,8 @@ plugins:
         verbose: true
         use_anchor_titles: true
         use_page_icon: true
+        interwiki:
+            wp: https://en.wikipedia.org/wiki/{{alias}}
 ```
 
 ### `verbose`
@@ -141,6 +159,18 @@ Setting this flag to true causes the plugin to replace an alias containing an an
 ### `use_page_icon`
 
 Setting this flag to true will include the [page's icon](https://squidfunk.github.io/mkdocs-material/reference/?h=page+icon#setting-the-page-icon) in the alias substitution if it's set for a given page.
+
+### `interwiki`
+
+This is defined as a dictionary strings mapped to URL templates, e.g.:
+
+```yaml
+interwiki:
+    wp: 'https://en.wikipedia.org/wiki/{{alias}}'
+    k: 'https://kagi.com/search?q={{alias}}'
+```
+
+Where the string `{{alias}}` is replaced with value from the alias. See the "Interwiki" section above on how to use these in tags.
 
 ## Troubleshooting
 
@@ -180,34 +210,13 @@ To use square brackets in the custom substitution text of an alias, you can esca
 [[the-alias|The \[bracketed\] Title]]
 ```
 
-## Local Development
-
-Upgrade pip and install the dependencies:
-
-```zsh
-python -m pip install --upgrade pip
-pip install mkdocs pytest pylint markdown setuptools
-```
-
-Installing a local copy of the plugin (potentially from your MkDoc's venv location):
-
-```zsh
-pip install -e /path/to/mkdocs-alias-plugin/
-```
-
-Running unit tests after installing pytest from the root directory:
-
-```zsh
-pytest -vv
-```
-
-Both unit test and linting:
-
-```zsh
-pylint $(git ls-files '*.py') && pytest -vv
-```
-
 ## Changelog
+
+### 0.11.0
+
+2026-03-09
+
+**Feature**: Adds the ability to use interwiki-style links, e.g.: `[[wp:Hypertext|An article on Hypertext]]`.
 
 ### 0.10.2
 
@@ -219,7 +228,9 @@ pylint $(git ls-files '*.py') && pytest -vv
 
 2026-01-08
 
-**Bug Fix**: Fixes a bug where adding an anchor to a bad reference would cause a fatal crash. Thank you @mdbenito for you [contribution](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/17) and @joapuiib for your [unit test coverage](https://github.com/EddyLuten/mkdocs-alias-plugin/pull/19)!
+**Bug Fix**: Fixes a bug where adding an anchor to a bad reference would cause a fatal crash.
+
+Thank you @mdbenito for you [contribution](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/17) and @joapuiib for your [unit test coverage](https://github.com/EddyLuten/mkdocs-alias-plugin/pull/19)!
 
 ### 0.10.0
 
@@ -234,9 +245,11 @@ pylint $(git ls-files '*.py') && pytest -vv
 **Features and Bug Fixes:**
 
 - Added the ability to use alias style links to anchors withing the current page, e.g.: `[[#my-anchor]]`.
-- Added support for page icons in link aliases, thank you @joapuiib for your [contribution](https://github.com/EddyLuten/mkdocs-alias-plugin/pull/15)!
+- Added support for page icons in link aliases
 - Added support for using the key `alias` and/or `aliases` for defining page aliases in meta sections.
 - Changed verbose mode to now also generates a tab-delimited log file containing each alias in the wiki.
+
+Thank you, @joapuiib, for your [contribution](https://github.com/EddyLuten/mkdocs-alias-plugin/pull/15)!
 
 ### 0.8.1
 

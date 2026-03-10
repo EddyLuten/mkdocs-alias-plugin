@@ -8,6 +8,8 @@ from __future__ import annotations
 import logging
 import re
 from typing import Match, TypedDict
+from urllib.parse import quote
+from dataclasses import dataclass
 
 from markdown import Markdown
 from mkdocs.config import config_options
@@ -32,7 +34,7 @@ REFERENCE_REGEX = re.compile(
     re.MULTILINE,
 )
 
-
+@dataclass
 class MarkdownAnchor(TypedDict):
     """A single entry in the table of contents. See the following link for more info:
     https://python-markdown.github.io/extensions/toc/#syntax"""
@@ -41,6 +43,15 @@ class MarkdownAnchor(TypedDict):
     id: str
     name: str
     children: list["MarkdownAnchor"]
+
+@dataclass
+class ReplaceTagContext:
+    """Context object for the replace_tag function."""
+    aliases: dict
+    log: logging.Logger
+    page_file: File
+    use_anchor_titles: bool = False
+    interwiki: dict | None = None
 
 
 def get_markdown_toc(markdown_source) -> list[MarkdownAnchor]:
@@ -92,12 +103,26 @@ def get_alias_names(meta_data: dict, meta_key: str = "alias") -> list[str] | Non
     return None
 
 
+def replace_interwiki_alias(
+    match: Match,
+    context: ReplaceTagContext
+) -> str | None:
+    """Replace an interwiki alias with the corresponding URL if the interwiki
+    config option is set and the alias contains an interwiki prefix."""
+    alias_part = match.group(2)
+    title_part = match.group(3)
+    prefix, _, page = alias_part.partition(':')
+    if not prefix in context.interwiki:
+        return None
+    title_part = title_part if title_part is not None else page
+    url = str(context.interwiki[prefix]).replace("{{alias}}", quote(page))
+    context.log.info(f"replaced interwiki alias '{alias_part}' with '{url}'")
+    return f"[{title_part}]({url})"
+
+
 def replace_tag(
     match: Match,
-    aliases: dict,
-    log: logging.Logger,
-    page_file: File,
-    use_anchor_titles: bool = False,
+    context: ReplaceTagContext
 ):
     """Callback used in the sub function within on_page_markdown."""
     if match.group(1) is not None:
@@ -107,7 +132,13 @@ def replace_tag(
     tag_bits = [""]
     if match.group(2) is not None:
         tag_bits = str(match.group(2)).split("#")
-    alias = aliases.get(tag_bits[0])
+    # if the interwiki config option is set and the alias contains an interwiki
+    # prefix, replace it with the interwiki URL and return early
+    if context.interwiki is not None and ':' in tag_bits[0]:
+        interwiki_url = replace_interwiki_alias(match, context)
+        if interwiki_url is not None:
+            return interwiki_url
+    alias = context.aliases.get(tag_bits[0])
 
     # if the alias is not found, log a warning and return the input string
     # unless the alias is an anchor tag, then try to find the anchor tag
@@ -115,25 +146,25 @@ def replace_tag(
     if alias is None:
         matched = str(match.group(2))
         if len(tag_bits) < 2 or not matched.startswith("#"):
-            log.warning(
-                "Alias '%s' not found in '%s'", match.group(2), page_file.src_path
+            context.log.warning(
+                "Alias '%s' not found in '%s'", match.group(2), context.page_file.src_path
             )
             return match.group(0)  # return the input string
         # using the [[#anchor]] syntax to link within the current page:
         anchor = tag_bits[1]
-        anchors = get_markdown_toc(page_file.content_string)
+        anchors = get_markdown_toc(context.page_file.content_string)
         anchor_tag = find_anchor_by_id(anchors, anchor)
         if anchor_tag is not None:
-            log.info(f"treating {matched} like an anchor to {anchor_tag['name']}")
+            context.log.info(f"treating {matched} like an anchor to {anchor_tag['name']}")
             return f"[{anchor_tag['name']}](#{anchor})"
-        log.warning(f"Anchor '{anchor}' not found in '{page_file.src_path}'")
+        context.log.warning(f"Anchor '{anchor}' not found in '{context.page_file.src_path}'")
         return match.group(0)
 
     text = None
     anchor = tag_bits[1] if len(tag_bits) > 1 else None
     # if the use_anchor_titles config option is set, replace the text with the
     # anchor title, but only if the alias tag doesn't have a custom text
-    if use_anchor_titles and anchor is not None and match.group(3) is None:
+    if context.use_anchor_titles and anchor is not None and match.group(3) is None:
         anchor_tag = find_anchor_by_id(alias["anchors"], anchor)
         if anchor_tag is not None:
             text = anchor_tag["name"]
@@ -144,15 +175,15 @@ def replace_tag(
     if text is None:
         text = alias["url"]
 
-    url = get_relative_url(alias["url"], page_file.src_uri)
+    url = get_relative_url(alias["url"], context.page_file.src_uri)
     if anchor is not None:
         url = f"{url}#{tag_bits[1]}"
 
-    log.info("replaced alias '%s' with '%s' to '%s'", alias["alias"], text, url)
+    context.log.info("replaced alias '%s' with '%s' to '%s'", alias["alias"], text, url)
     return f"[{text}]({url})"
 
 
-def replace_reference(match, aliases, log, page_file):
+def replace_reference(match: Match, context: ReplaceTagContext):
     """Callback used in the sub function within on_page_markdown for
     reference-style links."""
     ref_id = match.group("ref_id")
@@ -162,13 +193,13 @@ def replace_reference(match, aliases, log, page_file):
     base_alias = tag_bits[0]
     anchor = tag_bits[1] if len(tag_bits) > 1 else None
 
-    alias = aliases.get(base_alias)
+    alias = context.aliases.get(base_alias)
     if alias is None:
-        log.warning(f"Alias '{base_alias}' not found for reference link...")
+        context.log.warning(f"Alias '{base_alias}' not found for reference link...")
         match.group(0)  # return original string
 
     # Resolve the final URL and anchor
-    url = get_relative_url(alias["url"], page_file.src_uri)
+    url = get_relative_url(alias["url"], context.page_file.src_uri)
     if anchor:
         url = f"{url}#{anchor}"
 
@@ -192,6 +223,7 @@ class AliasPlugin(BasePlugin):
         ("verbose", config_options.Type(bool, default=False)),
         ("use_anchor_titles", config_options.Type(bool, default=False)),
         ("use_page_icon", config_options.Type(bool, default=False)),
+        ("interwiki", config_options.Type(dict, default={})),
     )
     aliases = {}
     log = logging.getLogger(f"mkdocs.plugins.{__name__}")
@@ -210,23 +242,25 @@ class AliasPlugin(BasePlugin):
 
     def on_page_markdown(self, markdown: str, /, *, page: Page, **_):
         """Replaces any alias tags on the page with markdown links."""
+        context = ReplaceTagContext(
+            aliases=self.aliases,
+            log=self.log,
+            page_file=page.file,
+            use_anchor_titles=self.config["use_anchor_titles"],
+            interwiki=self.config["interwiki"] if len(self.config["interwiki"]) > 0 else None,
+        )
+
         # Replace any reference-style links first
         markdown = re.sub(
             REFERENCE_REGEX,
-            lambda match: replace_reference(match, self.aliases, self.log, page.file),
+            lambda match: replace_reference(match, context),
             markdown,
         )
 
         # Replace any inline alias tags
         markdown = re.sub(
             ALIAS_TAG_REGEX,
-            lambda match: replace_tag(
-                match,
-                self.aliases,
-                self.log,
-                page.file,
-                self.config["use_anchor_titles"],
-            ),
+            lambda match: replace_tag(match, context),
             markdown,
         )
         self.current_page = page
