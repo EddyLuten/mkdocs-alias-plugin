@@ -16,9 +16,40 @@ from alias.plugin import (
     replace_reference,
     replace_tag,
     ReplaceTagContext,
+    split_anchor,
+    find_anchor_by_id,
 )
 
 PAGE_FILE = File("/folder1/folder4/folder5/test.md", "/src/", "/dest/", False)
+
+
+def test_split_anchor():
+    """Test splitting an alias tag into the alias and anchor parts"""
+    assert split_anchor("my-alias#anchor") == ("my-alias", "anchor")
+    assert split_anchor("my-alias#anchor#another") == ("my-alias", "anchor")
+    assert split_anchor("my-alias") == ("my-alias", None)
+    assert split_anchor("#anchor") == (None, "anchor")
+    assert split_anchor("#anchor#another") == (None, "anchor")
+    assert split_anchor("") == ('', None)
+
+
+def test_find_anchor_by_id():
+    """Test finding an anchor by its ID in a list of anchors"""
+    anchors = [
+        {"id": "anchor1", "name": "Anchor 1"},
+        {"id": "anchor2", "name": "Anchor 2"},
+        {"id": "anchor3", "name": "Anchor 3"},
+        {"id": "anchor4", "name": "Anchor 4", "children": [
+            {"id": "nested1", "name": "Nested Anchor 1"},
+            {"id": "nested2", "name": "Nested Anchor 2"},
+        ]},
+    ]
+    assert find_anchor_by_id(anchors, "anchor1") == anchors[0]
+    assert find_anchor_by_id(anchors, "anchor2") == anchors[1]
+    assert find_anchor_by_id(anchors, "anchor3") == anchors[2]
+    assert find_anchor_by_id(anchors, "nested1") == anchors[3]["children"][0]
+    assert find_anchor_by_id(anchors, "nested2") == anchors[3]["children"][1]
+    assert find_anchor_by_id(anchors, "not-an-anchor") is None
 
 
 def test_get_page_title_1():
@@ -739,6 +770,26 @@ def test_interwiki_alias_with_anchor_and_title():
         interwiki={"wp": "https://en.wikipedia.org/wiki/{{alias}}"},
     )
     markdown = "Test: [[wp:Python (programming language)#History|History]]"
+    result = re.sub(
+        ALIAS_TAG_REGEX,
+        lambda match: replace_tag(match, context),
+        markdown,
+    )
+    assert result == (
+        "Test: [History]"
+        "(https://en.wikipedia.org/wiki/Python%20%28programming%20language%29%23History)"
+    )
+
+def test_interwiki_alias_with_multiple_anchors():
+    """Test interwiki alias replacement with multiple anchors, only the first
+    anchor should be used"""
+    context = ReplaceTagContext(
+        aliases={},
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+        interwiki={"wp": "https://en.wikipedia.org/wiki/{{alias}}"},
+    )
+    markdown = "Test: [[wp:Python (programming language)#History#Another Anchor|History]]"
     result = re.sub(
         ALIAS_TAG_REGEX,
         lambda match: replace_tag(match, context),

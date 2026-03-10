@@ -61,6 +61,14 @@ def get_markdown_toc(markdown_source) -> list[MarkdownAnchor]:
     return getattr(md, "toc_tokens", [])
 
 
+def get_final_relative_url(url: str, page_file: File, anchor: str | None = None) -> str:
+    """Get the final relative URL for the alias, including any anchor if provided."""
+    relative_url = get_relative_url(url, page_file.src_uri)
+    if anchor is not None:
+        relative_url = f"{relative_url}#{anchor}"
+    return relative_url
+
+
 def find_anchor_by_id(
     anchors: list[MarkdownAnchor], anchor_id: str
 ) -> MarkdownAnchor | None:
@@ -68,10 +76,10 @@ def find_anchor_by_id(
     for anchor in anchors:
         if anchor["id"] == anchor_id:
             return anchor
-        if "children" in anchor:
-            child = find_anchor_by_id(anchor["children"], anchor_id)
-            if child is not None:
-                return child
+        # recursively search the children of the anchor
+        child = find_anchor_by_id(anchor.get("children", []), anchor_id)
+        if child is not None:
+            return child
     return None
 
 
@@ -103,6 +111,17 @@ def get_alias_names(meta_data: dict, meta_key: str = "alias") -> list[str] | Non
     return None
 
 
+def split_anchor(alias: str) -> tuple[str, str | None]:
+    """Splits the alias into the alias name and anchor if it contains an anchor."""
+    if not '#' in alias:
+        return alias, None
+    if alias.startswith('#'):
+        # no alias, just an anchor
+        return None, alias.split('#')[1]
+    name, anchor, *_ = alias.split('#')
+    return name, anchor
+
+
 def replace_interwiki_alias(
     match: Match,
     context: ReplaceTagContext
@@ -114,6 +133,9 @@ def replace_interwiki_alias(
     prefix, _, page = alias_part.partition(':')
     if not prefix in context.interwiki:
         return None
+    page, anchor = split_anchor(page)
+    if anchor is not None:
+        page = f"{page}#{anchor}"
     title_part = title_part if title_part is not None else page
     url = str(context.interwiki[prefix]).replace("{{alias}}", quote(page))
     context.log.info(f"replaced interwiki alias '{alias_part}' with '{url}'")
@@ -128,32 +150,31 @@ def replace_tag(
     if match.group(1) is not None:
         # if the alias match was escaped, return the unescaped version
         return match.group(0)[1:]
+    matched = str(match.group(2))
     # split the tag up in case there's an anchor in the link
-    tag_bits = [""]
-    if match.group(2) is not None:
-        tag_bits = str(match.group(2)).split("#")
+    alias, anchor = split_anchor(matched)
     # if the interwiki config option is set and the alias contains an interwiki
     # prefix, replace it with the interwiki URL and return early
-    if context.interwiki is not None and ':' in tag_bits[0]:
+    if context.interwiki is not None and ':' in alias:
         interwiki_url = replace_interwiki_alias(match, context)
         if interwiki_url is not None:
             return interwiki_url
-    alias = context.aliases.get(tag_bits[0])
+    alias = context.aliases.get(alias)
 
     # if the alias is not found, log a warning and return the input string
     # unless the alias is an anchor tag, then try to find the anchor tag
     # and replace it with the anchor's title
     if alias is None:
-        matched = str(match.group(2))
-        if len(tag_bits) < 2 or not matched.startswith("#"):
+        if not matched.startswith('#'):
             context.log.warning(
                 "Alias '%s' not found in '%s'", match.group(2), context.page_file.src_path
             )
             return match.group(0)  # return the input string
         # using the [[#anchor]] syntax to link within the current page:
-        anchor = tag_bits[1]
-        anchors = get_markdown_toc(context.page_file.content_string)
-        anchor_tag = find_anchor_by_id(anchors, anchor)
+        anchor_tag = find_anchor_by_id(
+            anchors=get_markdown_toc(context.page_file.content_string),
+            anchor_id=anchor
+        )
         if anchor_tag is not None:
             context.log.info(f"treating {matched} like an anchor to {anchor_tag['name']}")
             return f"[{anchor_tag['name']}](#{anchor})"
@@ -161,7 +182,6 @@ def replace_tag(
         return match.group(0)
 
     text = None
-    anchor = tag_bits[1] if len(tag_bits) > 1 else None
     # if the use_anchor_titles config option is set, replace the text with the
     # anchor title, but only if the alias tag doesn't have a custom text
     if context.use_anchor_titles and anchor is not None and match.group(3) is None:
@@ -175,10 +195,7 @@ def replace_tag(
     if text is None:
         text = alias["url"]
 
-    url = get_relative_url(alias["url"], context.page_file.src_uri)
-    if anchor is not None:
-        url = f"{url}#{tag_bits[1]}"
-
+    url = get_final_relative_url(alias["url"], context.page_file, anchor)
     context.log.info("replaced alias '%s' with '%s' to '%s'", alias["alias"], text, url)
     return f"[{text}]({url})"
 
@@ -186,23 +203,19 @@ def replace_tag(
 def replace_reference(match: Match, context: ReplaceTagContext):
     """Callback used in the sub function within on_page_markdown for
     reference-style links."""
-    ref_id = match.group("ref_id")
-    alias_name = match.group("alias_name")
+    ref_id = str(match.group("ref_id"))
+    alias_name = str(match.group("alias_name"))
 
-    tag_bits = alias_name.split("#", 1)
-    base_alias = tag_bits[0]
-    anchor = tag_bits[1] if len(tag_bits) > 1 else None
-
+    base_alias, anchor = split_anchor(alias_name)
     alias = context.aliases.get(base_alias)
+
     if alias is None:
         context.log.warning(f"Alias '{base_alias}' not found for reference link...")
         match.group(0)  # return original string
 
     # Resolve the final URL and anchor
-    url = get_relative_url(alias["url"], context.page_file.src_uri)
-    if anchor:
-        url = f"{url}#{anchor}"
-
+    url = get_final_relative_url(alias["url"], context.page_file, anchor)
+    context.log.info(f"replaced reference alias '{alias_name}' with URL '{url}'")
     # Reconstruct the standard Markdown reference definition:
     # [reference-id]: url
     return f"[{ref_id}]: {url}"

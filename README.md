@@ -109,9 +109,9 @@ As of version 0.4.0, it is possible to escape aliases to prevent them being pars
 As of version 0.10.0, you may use a specialized version of the alias syntax for aliases in footnotes:
 
 ```md
-The plugin [`mkdocs-alias-plugin`][alias-plugin] is awesome!
+The song references [Wuthering Heights][wuthering-heights].
 
-[alias-plugin]: https://github.com/EddyLuten/mkdocs-alias-plugin
+[wuthering-heights]: [[wuthering-heights#references]]
 ```
 
 Since this formats footnote-style links using a different syntax than valid Markdown, your linter may object and automatically remove the links upon saving. To get around this for markdownlint, disable rule "MD053" in your `.markdownlint.json` file.
