@@ -1,6 +1,8 @@
 # Contributing
 
-Pull requests are disabled for the time being, but if you find a bug, or wish to request a feature, feel free to open a new issue.
+If you find a bug, or wish to request a feature, feel free to open a [new issue](https://github.com/EddyLuten/mkdocs-alias-plugin/issues/new/choose).
+
+PRs are welcome and appreciated, but please _open an issue first_ to discuss the change you'd like to make first. PRs that haven't been discussed, or that fall outside the intended scope of this project, may be closed without merging.
 
 ## Local Development
 
