@@ -12,9 +12,13 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+        image: python:3.10
+        volumes:
+            - act-toolcache:/opt/hostedtoolcache
     strategy:
       matrix:
-        python-version: ["3.9"]
+        python-version: ["3.10"]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python-version }}
