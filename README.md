@@ -11,6 +11,11 @@ The aliases are configured through the meta-sections of each page (see Usage bel
 
 If you like this plugin, you'll probably also like [mkdocs-categories-plugin](https://pypi.org/project/mkdocs-categories-plugin) and [mkdocs-live-edit-plugin](https://pypi.org/project/mkdocs-live-edit-plugin).
 
+> [!IMPORTANT]
+> This repository has moved to [Codeberg](https://codeberg.org/luten/mkdocs-alias-plugin).
+>
+> This GitHub **mirror** is synced automatically, but please file issues and pull requests on Codeberg. See the [CONTRIBUTING](CONTRIBUTING.md) file for details. All existing issues and pull requests have also migrated there.
+
 ## Rationale
 
 I maintain a fairly large wiki and occasionally will restructure parts of it, resulting in many broken links. This plugin allows me to separate the wiki contents from the file system structure and resolves the paths during build time. Maybe this plugin will help you out as well.
@@ -214,6 +219,12 @@ To use square brackets in the custom substitution text of an alias, you can esca
 ```
 
 ## Changelog
+
+### 0.11.1
+
+2026-04-05
+
+Non-code release. Updates the PyPI metadata to point to the new Codeberg repository.
 
 ### 0.11.0
 
