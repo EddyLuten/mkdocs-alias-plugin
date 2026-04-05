@@ -14,7 +14,7 @@ jobs:
     steps:
     - uses: https://github.com/actions/checkout@v4
     - name: Set up Python
-      uses: https://github.com/actions/actions/setup-python@v5
+      uses: https://github.com/actions/setup-python@v5
       with:
         python-version: '3.10'
     - name: Install dependencies
