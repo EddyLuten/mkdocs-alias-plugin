@@ -13,9 +13,9 @@ jobs:
   build-3-10:
     runs-on: ubuntu-latest
     steps:
-      - uses: https://github.com/snok/actions/checkout@v4
+      - uses: https://github.com/actions/checkout@v4
       - name: Set up Python 3.10
-        uses: https://github.com/snok/actions/setup-python@v5
+        uses: https://github.com/actions/setup-python@v5
         with:
           python-version: '3.10'
       - name: Install dependencies
