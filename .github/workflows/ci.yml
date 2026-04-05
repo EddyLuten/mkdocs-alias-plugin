@@ -13,7 +13,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-        image: python:3.10
+        image: ubuntu:latest
         volumes:
             - act-toolcache:/opt/hostedtoolcache
     strategy:
