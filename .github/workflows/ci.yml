@@ -12,6 +12,8 @@ on:
 jobs:
   build-3-10:
     runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/catthehacker/ubuntu:act-latest
     steps:
       - uses: https://github.com/actions/checkout@v4
       - name: Set up Python 3.10
