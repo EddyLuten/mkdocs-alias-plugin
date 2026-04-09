@@ -5,20 +5,29 @@
 [![Downloads](https://pepy.tech/badge/mkdocs-alias-plugin)](https://pepy.tech/project/mkdocs-alias-plugin)
 [![CI Status](https://codeberg.org/luten/mkdocs-alias-plugin/badges/workflows/ci.yml/badge.svg)](https://codeberg.org/luten/mkdocs-alias-plugin/actions?workflow=ci.yml)
 
-The `mkdocs-alias-plugin` MkDocs plugin allows links to your pages using a custom alias such as `[[my-alias]]` or `[[my-alias|My Title]]`.
-
-The aliases are configured through the meta-sections of each page (see Usage below).
-
-If you like this plugin, you'll probably also like [mkdocs-categories-plugin](https://pypi.org/project/mkdocs-categories-plugin) and [mkdocs-live-edit-plugin](https://pypi.org/project/mkdocs-live-edit-plugin).
-
 > [!IMPORTANT]
 > This repository has moved to [Codeberg](https://codeberg.org/luten/mkdocs-alias-plugin).
 >
 > This GitHub **mirror** is synced automatically, but please file issues and pull requests on Codeberg. See the [CONTRIBUTING](CONTRIBUTING.md) file for details. All existing issues and pull requests have also migrated there.
 
-## Rationale
+The mkdocs-alias-plugin MkDocs plugin allows links to your pages using custom aliases:
 
-I maintain a fairly large wiki and occasionally will restructure parts of it, resulting in many broken links. This plugin allows me to separate the wiki contents from the file system structure and resolves the paths during build time. Maybe this plugin will help you out as well.
+```md
+This is a link to [[my-page]].
+This is a link to [[my-page|the same]] alias.
+```
+
+[Read the documentation](https://alias.luten.dev/) for more advanced use cases.
+
+Using aliases allows you to decouple the file structure of your MkDocs wiki from its taxonomy. For example, if you have a wiki about animals which accidentally classifies pigs as reptiles, after moving the file into the mammals directory, you won’t have to update all of the links to the pig page. Depending on the size of your wiki, this can save quite a bit of time.
+
+This plugin uses a wikilinks-like syntax, but is different in that the aliases are configured through the frontmatter (meta-sections) of each page, rather than defined by the page’s titles. For example, adding the following item to your page’s frontmatter allows you to use the above alias:
+
+```yaml
+alias: my-page
+```
+
+If you like this plugin, you'll probably also like [mkdocs-categories-plugin](https://pypi.org/project/mkdocs-categories-plugin) and [mkdocs-live-edit-plugin](https://pypi.org/project/mkdocs-live-edit-plugin).
 
 ## Installation
 
@@ -37,7 +46,7 @@ plugins:
 
 For further configuration, see the Options section below.
 
-## Usage
+## Basic Usage
 
 Add an `alias` section to your page's meta block:
 
@@ -55,168 +64,7 @@ The song references [[wuthering-heights]].
 
 Which, after the page builds, renders as a regular link to your page.
 
-A more advanced example would be to use the dictionary-style configuration instead of providing a different link title:
-
-```yaml
----
-alias:
-    name: wuthering-heights
-    text: Wuthering Heights, a novel by Emily Brontë
----
-```
-
-If you'd like to supply a custom link text instead on a link-by-link basis, you can do so using a pipe to separate the title from the alias:
-
-```md
-The song references [[wuthering-heights|Wuthering Heights]].
-```
-
-As of version 0.6.0, you can also use link anchors in your aliases:
-
-```md
-The song references [[wuthering-heights#references]].
-```
-
-Or, using a custom title:
-
-```md
-The song references [[wuthering-heights#references|Wuthering Heights]].
-```
-
-As of version 0.8.0, you can enable the plugin option `use_anchor_titles` to replace anchor links with the text of the page heading that defined it. This behavior is opt-in to preserve backward compatibility.
-
-As of version 0.9.0, you may also use `aliases` in addition to (or in place of) the `alias` key in the meta section of your pages. This is to provide some similarity to other Markdown based software that supports aliases, such as Obsidian.
-
-Please refer to the [MkDocs documentation](https://www.mkdocs.org/user-guide/writing-your-docs/#yaml-style-meta-data) for more information on how the meta-data block is used.
-
-### Multiple Aliases
-
-As of version 0.3.0, assigning multiple aliases to a single page is possible. This feature does come with the limitation that these aliases cannot define a per-alias title and instead will use the page title. The syntax for this is:
-
-```yaml
----
-alias:
-    - wuthering-heights
-    - wuthering
-    - wh
----
-```
-
-### Escaping Aliases (Escape Syntax)
-
-As of version 0.4.0, it is possible to escape aliases to prevent them being parsed by the plugin. This is useful if you use a similar double-bracket markup for a different purpose (e.g. shell scripts in code blocks). The syntax for this feature is a leading backslash:
-
-```md
-\[[this text will remain untouched]]
-
-[[this text will be parsed as an alias]]
-```
-
-### Footnote-Style Aliases
-
-As of version 0.10.0, you may use a specialized version of the alias syntax for aliases in footnotes:
-
-```md
-The song references [Wuthering Heights][wuthering-heights].
-
-[wuthering-heights]: [[wuthering-heights#references]]
-```
-
-Since this formats footnote-style links using a different syntax than valid Markdown, your linter may object and automatically remove the links upon saving. To get around this for markdownlint, disable rule "MD053" in your `.markdownlint.json` file.
-
-### Interwiki Links
-
-As of version 0.11.0, you may use a specialized version of the alias syntax to link to external sources defined in your alias plugin options (see "Options" below):
-
-```md
-[[w:Hypertext]]
-```
-
-Or, defining a custom title:
-
-```md
-[[[w:Hypertext|The Wikipedia Article on Hypertext]]]
-```
-
-Including anchors in the link is also allowed.
-
-## Options
-
-You may customize the plugin by passing options into the plugin's configuration sections in `mkdocs.yml`:
-
-```yaml
-plugins:
-    - alias:
-        verbose: true
-        use_anchor_titles: true
-        use_page_icon: true
-        interwiki:
-            wp: https://en.wikipedia.org/wiki/{{alias}}
-```
-
-### `verbose`
-
-You may use the optional `verbose` option to print more information about which aliases were used and defined during the build process. A tab-delimited file named `aliases.log` will also be defined at the project root, containing a list of every alias defined by the wiki.
-
-The default value is `false` and should only be enabled when debugging issue with the plugin.
-
-### `use_anchor_titles`
-
-Setting this flag to true causes the plugin to replace an alias containing an anchor (`[[my-page#sub-heading]]`) with the text of the header that defined it. You can still override the title of the link as usual.
-
-### `use_page_icon`
-
-Setting this flag to true will include the [page's icon](https://squidfunk.github.io/mkdocs-material/reference/?h=page+icon#setting-the-page-icon) in the alias substitution if it's set for a given page.
-
-### `interwiki`
-
-This is defined as a dictionary strings mapped to URL templates, e.g.:
-
-```yaml
-interwiki:
-    wp: 'https://en.wikipedia.org/wiki/{{alias}}'
-    k: 'https://kagi.com/search?q={{alias}}'
-```
-
-Where the string `{{alias}}` is replaced with value from the alias. See the "Interwiki" section above on how to use these in tags.
-
-## Troubleshooting
-
-### The link text looks like a path or URL
-
-Your alias doesn't have link text defined *and* your page doesn't have a title H1 tag or a `title` attribute in its meta data section. Once you add this, your link will render with the appropriate text.
-
-### My alias is not replaced
-
-`WARNING  -  Alias 'my-alias' not found`
-
-The alias could not be found in the defined aliases, usually due to a typo. Enable verbose output in the plugin's configuration to display all of the found aliases.
-
-However, it is also possible that the plugin is trying to interpret another double-bracketed syntax as an alias. In this case, use the escape syntax to prevent the plugin from parsing it.
-
-### "Alias already defined"
-
-You're getting a message resembling this in your output:
-
-`WARNING  -  page-url: alias alias-name already defined in other-url, skipping.`
-
-Aliases *must* be unique. Ensure that you're not redefining the same alias for a different page. Rename one of them and the warning should go away.
-
-### Aliases with alternative titles break $my_markdown_tool
-
-This is a limitation of extending the Markdown syntax with non-standard features, which this MkDocs plugin does. Within Markdown tables, rather than using the standard alias links (`[[the-alias|The Title]]`), I recommend you use [footnote-style aliases](#footnote-style-aliases) instead to prevent breaking formatters and tools unaware of this plugin's existence. See [issue #24](https://codeberg.org/luten/mkdocs-alias-plugin/issues/24) for more context.
-
-### Footnote links disappear when I save my file
-
-Since markdownlint isn't aware of alias-style links, the links are considered "unused" by the linter. To get around this, disable rule "MD053" in your `.markdownlint.json` file.
-
-### How do I use square brackets in an alias?
-
-To use square brackets in the custom substitution text of an alias, you can escape them with a backslash (`\`). For example:
-
-```md
-[[the-alias|The \[bracketed\] Title]]
-```
+This is the most common use case. If you have more advanced needs, you can find more complex examples in [the project's documentation](https://alias.luten.dev/).
 
 ## Changelog
 

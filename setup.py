@@ -18,7 +18,7 @@ setup(
     author="Eddy Luten",
     author_email="eluten@pm.me",
     license="MIT",
-    python_requires=">=3.0",
+    python_requires=">=3.9",
     install_requires=["mkdocs", "markdown"],
     classifiers=[
         "License :: OSI Approved :: MIT License",
