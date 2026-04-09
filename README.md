@@ -8,7 +8,7 @@
 > [!IMPORTANT]
 > This repository has moved to [Codeberg](https://codeberg.org/luten/mkdocs-alias-plugin).
 >
-> This GitHub **mirror** is synced automatically, but please file issues and pull requests on Codeberg. See the [CONTRIBUTING](CONTRIBUTING.md) file for details. All existing issues and pull requests have also migrated there.
+> The GitHub **mirror** is synced automatically, but please file issues and pull requests on Codeberg. See the [CONTRIBUTING](CONTRIBUTING.md) file for details. All existing issues and pull requests have also migrated there.
 
 The mkdocs-alias-plugin MkDocs plugin allows links to your pages using custom aliases:
 
