@@ -27,7 +27,7 @@ This plugin uses a wikilinks-like syntax, but is different in that the aliases a
 alias: my-page
 ```
 
-If you like this plugin, you'll probably also like [mkdocs-categories-plugin](https://pypi.org/project/mkdocs-categories-plugin) and [mkdocs-live-edit-plugin](https://pypi.org/project/mkdocs-live-edit-plugin).
+If you like this plugin, you'll probably also like [mkdocs-categories-plugin](https://categories.luten.dev/) and [mkdocs-live-edit-plugin](https://live-edit.luten.dev/).
 
 ## Installation
 
