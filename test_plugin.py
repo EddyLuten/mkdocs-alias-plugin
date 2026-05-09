@@ -9,8 +9,8 @@ import re
 from mkdocs.structure.files import File
 
 from alias.plugin import (
-    ALIAS_TAG_REGEX,
-    REFERENCE_REGEX,
+    build_alias_tag_regex,
+    build_reference_regex,
     get_alias_names,
     get_page_title,
     replace_reference,
@@ -21,6 +21,8 @@ from alias.plugin import (
 )
 
 PAGE_FILE = File("/folder1/folder4/folder5/test.md", "/src/", "/dest/", False)
+ALIAS_TAG_REGEX = build_alias_tag_regex()
+REFERENCE_REGEX = build_reference_regex()
 
 
 def test_split_anchor():
@@ -799,3 +801,79 @@ def test_interwiki_alias_with_multiple_anchors():
         "Test: [History]"
         "(https://en.wikipedia.org/wiki/Python%20%28programming%20language%29%23History)"
     )
+
+
+def test_custom_delimiters_dollar_brackets():
+    """Custom [$ $] delimiters should resolve aliases like [[ ]] does."""
+    context = ReplaceTagContext(
+        aliases={
+            "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
+    regex = build_alias_tag_regex("[$", "$]")
+    markdown = "Test: [$my-alias$]"
+    result = re.sub(regex, lambda match: replace_tag(match, context), markdown)
+    assert result == "Test: [link text](../../../my-alias.md)"
+
+
+def test_custom_delimiters_dont_match_default_brackets():
+    """With custom delimiters, [[ ]] in the markdown must be left alone
+    (TOML-style snippets stop being parsed)."""
+    context = ReplaceTagContext(
+        aliases={
+            "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
+    regex = build_alias_tag_regex("[$", "$]")
+    markdown = "TOML: [[section.key]] should be untouched"
+    result = re.sub(regex, lambda match: replace_tag(match, context), markdown)
+    assert result == markdown
+
+
+def test_custom_delimiters_with_title_and_anchor():
+    """Custom delimiters keep title/anchor support intact."""
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
+    regex = build_alias_tag_regex("[$", "$]")
+    markdown = "Test: [$my alias#anchor|Custom$]"
+    result = re.sub(regex, lambda match: replace_tag(match, context), markdown)
+    assert result == "Test: [Custom](../../../my-alias.md#anchor)"
+
+
+def test_custom_delimiters_mustache():
+    """{{ }} delimiters should also work."""
+    context = ReplaceTagContext(
+        aliases={
+            "my-alias": {"text": "link text", "alias": "my-alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
+    regex = build_alias_tag_regex("{{", "}}")
+    markdown = "Test: {{my-alias}}"
+    result = re.sub(regex, lambda match: replace_tag(match, context), markdown)
+    assert result == "Test: [link text](../../../my-alias.md)"
+
+
+def test_custom_delimiters_reference_regex():
+    """Reference-style links honor custom delimiters."""
+    context = ReplaceTagContext(
+        aliases={
+            "my alias": {"text": "The Text", "alias": "my alias", "url": "my-alias.md"}
+        },
+        log=logging.getLogger(),
+        page_file=PAGE_FILE,
+    )
+    regex = build_reference_regex("[$", "$]")
+    markdown = "[alias]: [$my alias$]"
+    result = re.sub(regex, lambda match: replace_reference(match, context), markdown)
+    assert result == "[alias]: ../../../my-alias.md"

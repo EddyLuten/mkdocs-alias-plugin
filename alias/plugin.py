@@ -18,21 +18,38 @@ from mkdocs.structure.files import File, Files
 from mkdocs.structure.pages import Page
 from mkdocs.utils import get_markdown_title, get_relative_url, meta
 
-# The Regular Expression used to find alias tags
-# group 1: escape character
-# group 2: alias name
-# group 3: alias text
-ALIAS_TAG_REGEX = r"([\\])?\[\[([^|\]]+)\|?((?:[^\]\\]|\\.)+)?\]\]"
-# RE for finding reference-style alias links
-REFERENCE_REGEX = re.compile(
-    r"^"  # Start of the line
-    r"\[(?P<ref_id>[^\]]+)\]:\s*"  # 1. [ref_id]:
-    r"\[\["
-    r"(?P<alias_name>[^|\]]+)"  # 2. [[page-alias#anchor]]
-    r"\]\]"
-    r"[ \t]*$",  # Optional trailing spaces and end of line
-    re.MULTILINE,
-)
+# Default delimiters for alias tags. Configurable via plugin options.
+DEFAULT_OPEN_TAG = "[["
+DEFAULT_CLOSE_TAG = "]]"
+
+
+def build_alias_tag_regex(open_tag: str = DEFAULT_OPEN_TAG,
+                          close_tag: str = DEFAULT_CLOSE_TAG) -> str:
+    """Build the alias tag regex for the given delimiters.
+
+    group 1: escape character
+    group 2: alias name
+    group 3: alias text
+    """
+    o = re.escape(open_tag)
+    c = re.escape(close_tag)
+    fc = re.escape(close_tag[0])  # forbidden char in inner content
+    return rf"([\\])?{o}([^|{fc}]+)\|?((?:[^{fc}\\]|\\.)+)?{c}"
+
+
+def build_reference_regex(open_tag: str = DEFAULT_OPEN_TAG,
+                          close_tag: str = DEFAULT_CLOSE_TAG):
+    """Build the reference-style link regex for the given delimiters."""
+    o = re.escape(open_tag)
+    c = re.escape(close_tag)
+    fc = re.escape(close_tag[0])
+    return re.compile(
+        rf"^"
+        rf"\[(?P<ref_id>[^\]]+)\]:\s*"
+        rf"{o}(?P<alias_name>[^|{fc}]+){c}"
+        rf"[ \t]*$",
+        re.MULTILINE,
+    )
 
 @dataclass
 class MarkdownAnchor(TypedDict):
@@ -237,14 +254,25 @@ class AliasPlugin(BasePlugin):
         ("use_anchor_titles", config_options.Type(bool, default=False)),
         ("use_page_icon", config_options.Type(bool, default=False)),
         ("interwiki", config_options.Type(dict, default={})),
+        ("open_tag", config_options.Type(str, default=DEFAULT_OPEN_TAG)),
+        ("close_tag", config_options.Type(str, default=DEFAULT_CLOSE_TAG)),
     )
     aliases = {}
     log = logging.getLogger(f"mkdocs.plugins.{__name__}")
     current_page = None
+    alias_tag_regex = build_alias_tag_regex()
+    reference_regex = build_reference_regex()
 
     def on_config(self, _):
-        """Set the log level if the verbose config option is set"""
+        """Set the log level if the verbose config option is set, and
+        compile the alias regexes from the configured delimiters."""
         self.log.setLevel(logging.INFO if self.config["verbose"] else logging.WARNING)
+        open_tag = self.config["open_tag"]
+        close_tag = self.config["close_tag"]
+        if not open_tag or not close_tag:
+            raise ValueError("open_tag and close_tag must be non-empty strings")
+        self.alias_tag_regex = build_alias_tag_regex(open_tag, close_tag)
+        self.reference_regex = build_reference_regex(open_tag, close_tag)
 
     def on_post_build(self, **_):
         """Executed after the build has completed. Clears the aliases from
@@ -265,14 +293,14 @@ class AliasPlugin(BasePlugin):
 
         # Replace any reference-style links first
         markdown = re.sub(
-            REFERENCE_REGEX,
+            self.reference_regex,
             lambda match: replace_reference(match, context),
             markdown,
         )
 
         # Replace any inline alias tags
         markdown = re.sub(
-            ALIAS_TAG_REGEX,
+            self.alias_tag_regex,
             lambda match: replace_tag(match, context),
             markdown,
         )
