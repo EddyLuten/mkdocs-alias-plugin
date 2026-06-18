@@ -68,6 +68,12 @@ This is the most common use case. If you have more advanced needs, you can find 
 
 ## Changelog
 
+### 0.12.0
+
+2026-06-18
+
+**Feature:** Adds the ability to use custom start and end tags for aliases, see #30
+
 ### 0.11.1
 
 2026-04-05
